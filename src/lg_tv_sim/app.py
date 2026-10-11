@@ -210,6 +210,7 @@ class Simulator:
         from lg_tv_sim.ssh.server import load_or_create_host_key, start_server
 
         server_cfg = self.config.server
+        token = os.environ.get(self.config.authentication.admin_token_env) or None
         host_key = load_or_create_host_key(self.config.path(self.config.authentication.host_key_file))
         # Bind the admin socket ourselves first: a busy port fails cleanly before SSH starts.
         admin_socket = bind_tcp(server_cfg.admin_host, server_cfg.admin_port, 'admin', '--admin-port')
@@ -220,7 +221,6 @@ class Simulator:
             raise PortInUseError(port_message('SSH', server_cfg.ssh_host, server_cfg.ssh_port, '--ssh-port', exc)) from exc
         port = acceptor.sockets[0].getsockname()[1]
         self.ssh_address = (server_cfg.ssh_host, port)
-        token = os.environ.get(self.config.authentication.admin_token_env) or None
         admin = uvicorn.Server(uvicorn.Config(create_app(self, token), log_level='warning', lifespan='off'))
         stop = asyncio.Event()
         loop = asyncio.get_running_loop()

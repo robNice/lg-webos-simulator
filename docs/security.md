@@ -22,7 +22,9 @@
 - **Zugangsdaten:** Das Simulator-Passwort kommt aus `$LG_TV_SIM_PASSWORD` oder wird generiert und in
   `.simulator/credentials` (0600) abgelegt. Der Host-Key liegt in `.simulator/keys/` (0600, Verzeichnis 0700).
   Niemals TV-Zugangsdaten verwenden.
-- **Admin-API:** Prüfung des Host-Headers (Schutz gegen DNS-Rebinding), kein CORS, strikte Pydantic-Modelle
+- **Admin-API:** Ohne Token nur Host-Header `127.0.0.1`/`localhost` (Schutz gegen DNS-Rebinding). Mit
+  `$LG_TV_SIM_ADMIN_TOKEN` antwortet die Oberfläche unter jedem Hostnamen (z. B. NAS im Heimnetz); jede API-Anfrage
+  braucht dann `X-Sim-Token`, den eine fremde Webseite nicht kennt, kein CORS, strikte Pydantic-Modelle
   (`extra=forbid`, `strict=True`, z. B. wird `"yes"` nicht als `true` akzeptiert), Bestätigung `confirm: true`
   für Reset/Restore/Szenario, optionaler Token `X-Sim-Token` (`$LG_TV_SIM_ADMIN_TOKEN`), CSP `self`.
 - **Daten:** `.simulator/`, `fixtures/private/`, Schlüssel und `.env` sind in `.gitignore`. Das Journal

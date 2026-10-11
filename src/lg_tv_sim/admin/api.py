@@ -49,13 +49,19 @@ class RestoreRequest(Strict):
 
 
 def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
+    """Without a token the admin UI answers only localhost Host headers (protection against DNS rebinding).
+    With a token it answers any host name (e.g. a NAS in the LAN): every API call then needs X-Sim-Token, which
+    a foreign web page never has."""
     app = FastAPI(title='LG TV Simulator – admin', docs_url=None, redoc_url=None, openapi_url=None)
 
     @app.middleware('http')
     async def guard(request: Request, call_next):
-        host = (request.headers.get('host') or '').rsplit(':', 1)[0]
-        if host not in ALLOWED_HOSTS:
-            return PlainTextResponse('forbidden host', status_code=403)
+        host = (request.headers.get('host') or '').rsplit(':', 1)[0].lower()
+        if not token and host not in ALLOWED_HOSTS:
+            return PlainTextResponse('forbidden host: without LG_TV_SIM_ADMIN_TOKEN the admin UI only answers on '
+                                     '127.0.0.1/localhost. Set LG_TV_SIM_ADMIN_TOKEN (e.g. in docker-compose) to '
+                                     'open it under any host name; the page then asks for the token.',
+                                     status_code=403)
         response = await call_next(request)
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers.setdefault('Cache-Control', 'no-store')

@@ -190,3 +190,23 @@ def check_container_binding(config: SimulatorConfig) -> None:
         if is_loopback(host):
             raise ConfigError(f'{label} host {host!r} is unreachable from outside the container; '
                               'use "0.0.0.0" and publish the port on 127.0.0.1 on the Docker host')
+
+
+
+# Docker: the usual settings come from the compose file and override the (optional) config file.
+ENVIRONMENT = {
+    'LG_TV_SIM_FIXTURE': ('storage', 'initial_fixture'),
+    'LG_TV_SIM_SCENARIO': ('behavior', 'scenario'),
+    'LG_TV_SIM_MODEL': ('device', 'model_name'),
+    'LG_TV_SIM_SERIAL': ('device', 'serial_number'),
+}
+
+
+def apply_environment(config: SimulatorConfig) -> SimulatorConfig:
+    """Override config values from set environment variables (validated like the file)."""
+    sections: dict[str, dict] = {}
+    for variable, (section, key) in ENVIRONMENT.items():
+        value = os.environ.get(variable)
+        if value:
+            sections.setdefault(section, {})[key] = value
+    return config.with_overrides(**sections) if sections else config

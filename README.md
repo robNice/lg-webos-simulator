@@ -143,6 +143,18 @@ docker compose exec lg-tv-sim cat .simulator/credentials             # Passwort 
 docker compose exec lg-tv-sim lg-tv-sim known-hosts >> ~/.ssh/known_hosts
 ```
 
+**Alles über das Compose-File:** Das Image läuft ohne Config-Datei. Einstellbar per Umgebungsvariable:
+
+| Variable | Wirkung |
+|---|---|
+| `LG_TV_SIM_ADMIN_TOKEN` | öffnet die Admin-Oberfläche für jeden Hostnamen (z. B. `http://omv:8767`); die API verlangt dann den Token, die Seite fragt einmal pro Sitzung danach. Ohne Token nur `127.0.0.1`/`localhost` |
+| `LG_TV_SIM_PASSWORD` | SSH-Passwort für den Editor, sonst generiert (`.simulator/credentials`) |
+| `LG_TV_SIM_FIXTURE`, `LG_TV_SIM_SCENARIO` | Startzustand und Fehlerszenario |
+| `LG_TV_SIM_MODEL`, `LG_TV_SIM_SERIAL` | gemeldete TV-Identität (Seriennummer muss mit `SIM-` beginnen) |
+| `PUID`, `PGID` | Besitzer der gemappten Ordner |
+
+Die Variablen haben Vorrang vor `/config/simulator.toml`; die Datei ist nur für seltene Feineinstellungen da.
+
 `known-hosts` nennt bei `0.0.0.0` den Host `127.0.0.1`. Bei anderem Host oder anderem veröffentlichtem Port:
 `known-hosts --host <name> --port <port>`.
 

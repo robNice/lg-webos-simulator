@@ -1,6 +1,6 @@
-# LG webOS TV Simulator – example for Docker Compose. Copy, adjust, then: docker compose up -d
-# SIMULATOR – not a real LG TV. Publish the ports on 127.0.0.1 only (the admin UI has no login of its own
-# unless LG_TV_SIM_ADMIN_TOKEN is set, and it accepts only localhost Host headers).
+# LG webOS TV Simulator – example for Docker Compose (e.g. OpenMediaVault "Compose" plugin).
+# SIMULATOR – not a real LG TV. Adjust the marked lines, then: docker compose up -d
+# Everything is configured here; config/simulator.toml in the config folder is optional fine-tuning.
 
 services:
   lg-tv-sim:
@@ -8,19 +8,26 @@ services:
     container_name: lg-tv-sim
     restart: unless-stopped
     ports:
-      - "127.0.0.1:2222:2222"   # SSH/SFTP for the editor (host IP:host port:container port)
-      - "127.0.0.1:8767:8767"   # admin UI – never 8765/8766, those belong to the Channel Editor
+      - "2222:2222"   # SSH/SFTP for the editor (host port : container port) – change the LEFT number if taken
+      - "8767:8767"   # admin UI – never 8765/8766, those belong to the Channel Editor
+      # Only this host may connect? Prefix with 127.0.0.1, e.g. "127.0.0.1:2222:2222".
     volumes:
-      # simulator.toml is created here on first start (from the image template) and never overwritten.
-      - ./config:/config
-      # runs, SSH host key, generated password (credentials), imported private fixtures
-      - simulator-data:/app/.simulator
+      # Runs, SSH host key (keep it, or the editor sees a new fingerprint), generated password, own fixtures:
+      - /path/to/lg-webos-simulator/data:/app/.simulator      ### CHANGE THIS ###
+      # Optional: simulator.toml (created on first start, never overwritten) for settings not listed below:
+      - /path/to/lg-webos-simulator/config:/config            ### CHANGE THIS ###
     environment:
       TZ: Europe/Berlin
-      PUID: "1000"   # owner of ./config/simulator.toml on the host (id -u); never 0
-      PGID: "1000"   # (id -g)
-      # LG_TV_SIM_PASSWORD: "choose-one"      # otherwise generated into the volume (.simulator/credentials)
-      # LG_TV_SIM_ADMIN_TOKEN: "choose-one"   # optional X-Sim-Token for the admin API
-
-volumes:
-  simulator-data:
+      PUID: "1000"                       # owner of the two folders on the host (id -u); never 0
+      PGID: "1000"                       # (id -g)
+      # Admin UI from other machines: set a token (any long string); the page asks for it once per session.
+      # Without it the admin UI only answers on the Docker host itself (http://127.0.0.1:8767).
+      # LG_TV_SIM_ADMIN_TOKEN: "change-me-to-something-long"
+      # SSH password for the editor (never the real TV password); otherwise generated, see
+      #   docker compose exec lg-tv-sim cat .simulator/credentials
+      # LG_TV_SIM_PASSWORD: "choose-one"
+      # Optional: start state and reported TV identity (defaults: real list of 11.10.2026 23:01, OLED55C27LA)
+      # LG_TV_SIM_FIXTURE: "mixed_modes"
+      # LG_TV_SIM_SCENARIO: "return_false_but_favorite_moved"
+      # LG_TV_SIM_MODEL: "OLED55C27LA"
+      # LG_TV_SIM_SERIAL: "SIM-000000000001"     # must start with SIM-

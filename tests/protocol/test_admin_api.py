@@ -124,3 +124,16 @@ def test_mode_filter_offers_all_reception_modes(admin):
     for mode, label in (('Satellite', 'Satellit'), ('Cable', 'Kabel'), ('Terrestrial', 'Antenne'),
                         ('IP', 'LG Channels (IP)')):
         assert f"{mode}: '{label}'" in script
+
+
+def test_token_opens_the_admin_ui_for_any_host(sim):
+    """Without a token only localhost Host headers (DNS rebinding); with a token any host, API only with token."""
+    closed = TestClient(create_app(sim), base_url='http://omv:8767').get('/')
+    assert closed.status_code == 403 and 'LG_TV_SIM_ADMIN_TOKEN' in closed.text
+    client = TestClient(create_app(sim, token='s3cret'), base_url='http://omv:8767')
+    assert client.get('/').status_code == 200
+    assert client.get('/api/status').status_code == 401
+    assert client.get('/api/status', headers={'X-Sim-Token': 's3cret'}).status_code == 200
+    assert client.post('/api/reset', json={'confirm': True}).status_code == 401
+    by_ip = TestClient(create_app(sim, token='s3cret'), base_url='http://192.168.1.10:8767')
+    assert by_ip.get('/api/status', headers={'X-Sim-Token': 's3cret'}).status_code == 200

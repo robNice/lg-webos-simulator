@@ -11,7 +11,13 @@ import urllib.request
 from pathlib import Path
 
 from lg_tv_sim import __version__
-from lg_tv_sim.config import ConfigError, SimulatorConfig, check_container_binding, resolve_config_path
+from lg_tv_sim.config import (
+    ConfigError,
+    SimulatorConfig,
+    apply_environment,
+    check_container_binding,
+    resolve_config_path,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -62,7 +68,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def load_config(args) -> SimulatorConfig:
-    return SimulatorConfig.load(resolve_config_path(args.config))
+    return apply_environment(SimulatorConfig.load(resolve_config_path(args.config)))
 
 
 def main(argv: list[str] | None = None) -> int:

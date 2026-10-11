@@ -118,3 +118,32 @@ def test_default_admin_port_avoids_editor_ports():
     assert config.server.admin_port == 8767
     with pytest.raises(ConfigError, match='8766'):
         config.with_overrides(server={'admin_port': 8766})
+
+
+def test_environment_overrides_the_config_file(tmp_path, monkeypatch):
+    """Docker: everything usual is set in the compose file; the config file stays optional."""
+    from lg_tv_sim.config import apply_environment
+    from tests.conftest import REPO
+    config = SimulatorConfig.load(REPO / 'config' / 'docker.toml')
+    monkeypatch.setenv('LG_TV_SIM_FIXTURE', 'mixed_modes')
+    monkeypatch.setenv('LG_TV_SIM_SCENARIO', 'return_false_but_favorite_moved')
+    monkeypatch.setenv('LG_TV_SIM_MODEL', 'OLED65G29LA')
+    monkeypatch.setenv('LG_TV_SIM_SERIAL', 'SIM-OMV')
+    config = apply_environment(config)
+    assert config.storage.initial_fixture == 'mixed_modes'
+    assert config.behavior.scenario == 'return_false_but_favorite_moved'
+    assert (config.device.model_name, config.device.serial_number) == ('OLED65G29LA', 'SIM-OMV')
+
+
+def test_environment_values_are_validated(monkeypatch):
+    from lg_tv_sim.config import apply_environment
+    monkeypatch.setenv('LG_TV_SIM_SERIAL', '602KXYZ1234')
+    with pytest.raises(ConfigError, match='SIM-'):
+        apply_environment(SimulatorConfig())
+
+
+def test_without_environment_nothing_changes(monkeypatch):
+    from lg_tv_sim.config import apply_environment
+    for name in ('LG_TV_SIM_FIXTURE', 'LG_TV_SIM_SCENARIO', 'LG_TV_SIM_MODEL', 'LG_TV_SIM_SERIAL'):
+        monkeypatch.delenv(name, raising=False)
+    assert apply_environment(SimulatorConfig()) == SimulatorConfig()
