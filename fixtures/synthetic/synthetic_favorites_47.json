@@ -1,0 +1,1229 @@
+{
+ "name": "synthetic_favorites_47",
+ "version": 1,
+ "seed": 47,
+ "description": "47 favorites in A in shuffled order, slots 1-95 occupied (renumbering needs moves, swap chains and Astra copies), WELT HD 13/403/1015, three entries on 101, B-H lists, same-name services, cable mode.",
+ "channels": [
+  {
+   "name": "Das Erste HD",
+   "number": 1,
+   "mode": "Satellite",
+   "phy": 12,
+   "tsid": 1002,
+   "sid": 10007,
+   "onid": 1,
+   "favorites": {
+    "A": 1
+   }
+  },
+  {
+   "name": "ZDF HD",
+   "number": 2,
+   "mode": "Satellite",
+   "phy": 13,
+   "tsid": 1003,
+   "sid": 10014,
+   "onid": 1,
+   "favorites": {
+    "A": 2
+   }
+  },
+  {
+   "name": "RTL HD",
+   "number": 3,
+   "mode": "Satellite",
+   "phy": 14,
+   "tsid": 1004,
+   "sid": 10021,
+   "onid": 1,
+   "favorites": {
+    "A": 0
+   }
+  },
+  {
+   "name": "SAT.1 HD",
+   "number": 4,
+   "mode": "Satellite",
+   "phy": 15,
+   "tsid": 1005,
+   "sid": 10028,
+   "onid": 1,
+   "favorites": {
+    "A": 4
+   }
+  },
+  {
+   "name": "ProSieben HD",
+   "number": 5,
+   "mode": "Satellite",
+   "phy": 16,
+   "tsid": 1006,
+   "sid": 10035,
+   "onid": 1,
+   "favorites": {
+    "A": 3
+   }
+  },
+  {
+   "name": "VOX HD",
+   "number": 6,
+   "mode": "Satellite",
+   "phy": 17,
+   "tsid": 1007,
+   "sid": 10042,
+   "onid": 1,
+   "favorites": {
+    "A": 45
+   }
+  },
+  {
+   "name": "kabel eins HD",
+   "number": 7,
+   "mode": "Satellite",
+   "phy": 18,
+   "tsid": 1008,
+   "sid": 10049,
+   "onid": 1
+  },
+  {
+   "name": "RTLZWEI HD",
+   "number": 8,
+   "mode": "Satellite",
+   "phy": 19,
+   "tsid": 1009,
+   "sid": 10056,
+   "onid": 1,
+   "favorites": {
+    "B": 7
+   }
+  },
+  {
+   "name": "arte HD",
+   "number": 9,
+   "mode": "Satellite",
+   "phy": 20,
+   "tsid": 1010,
+   "sid": 10063,
+   "onid": 1,
+   "favorites": {
+    "A": 11
+   }
+  },
+  {
+   "name": "3sat HD",
+   "number": 10,
+   "mode": "Satellite",
+   "phy": 21,
+   "tsid": 1011,
+   "sid": 10070,
+   "onid": 1
+  },
+  {
+   "name": "phoenix HD",
+   "number": 11,
+   "mode": "Satellite",
+   "phy": 22,
+   "tsid": 1012,
+   "sid": 10077,
+   "onid": 1,
+   "favorites": {
+    "A": 15
+   }
+  },
+  {
+   "name": "ZDFneo HD",
+   "number": 12,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1013,
+   "sid": 10084,
+   "onid": 1
+  },
+  {
+   "name": "WELT HD",
+   "number": 13,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1053,
+   "sid": 21108,
+   "onid": 1,
+   "tags": [
+    "deny_above_99",
+    "welt_hd"
+   ],
+   "favorites": {
+    "A": 38
+   }
+  },
+  {
+   "name": "n-tv HD",
+   "number": 14,
+   "mode": "Satellite",
+   "phy": 25,
+   "tsid": 1015,
+   "sid": 10098,
+   "onid": 1,
+   "favorites": {
+    "A": 5,
+    "B": 4
+   }
+  },
+  {
+   "name": "tagesschau24 HD",
+   "number": 15,
+   "mode": "Satellite",
+   "phy": 26,
+   "tsid": 1016,
+   "sid": 10105,
+   "onid": 1,
+   "favorites": {
+    "A": 13
+   }
+  },
+  {
+   "name": "ONE HD",
+   "number": 16,
+   "mode": "Satellite",
+   "phy": 27,
+   "tsid": 1017,
+   "sid": 10112,
+   "onid": 1,
+   "favorites": {
+    "A": 24,
+    "H": 1
+   }
+  },
+  {
+   "name": "ZDFinfo HD",
+   "number": 17,
+   "mode": "Satellite",
+   "phy": 28,
+   "tsid": 1018,
+   "sid": 10119,
+   "onid": 1,
+   "favorites": {
+    "A": 34
+   }
+  },
+  {
+   "name": "KiKA HD",
+   "number": 18,
+   "mode": "Satellite",
+   "phy": 29,
+   "tsid": 1019,
+   "sid": 10126,
+   "onid": 1,
+   "favorites": {
+    "A": 20
+   }
+  },
+  {
+   "name": "SUPER RTL HD",
+   "number": 19,
+   "mode": "Satellite",
+   "phy": 30,
+   "tsid": 1020,
+   "sid": 10133,
+   "onid": 1,
+   "favorites": {
+    "A": 19,
+    "D": 0
+   }
+  },
+  {
+   "name": "Nickelodeon",
+   "number": 20,
+   "mode": "Satellite",
+   "phy": 31,
+   "tsid": 1021,
+   "sid": 10140,
+   "onid": 1,
+   "favorites": {
+    "A": 33
+   }
+  },
+  {
+   "name": "ShopLC HD",
+   "number": 21,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1022,
+   "sid": 10147,
+   "onid": 1,
+   "favorites": {
+    "B": 20
+   }
+  },
+  {
+   "name": "QVC HD",
+   "number": 22,
+   "mode": "Satellite",
+   "phy": 33,
+   "tsid": 1023,
+   "sid": 10154,
+   "onid": 1,
+   "favorites": {
+    "A": 6,
+    "B": 3
+   }
+  },
+  {
+   "name": "HSE HD",
+   "number": 23,
+   "mode": "Satellite",
+   "phy": 11,
+   "tsid": 1001,
+   "sid": 10161,
+   "onid": 1,
+   "favorites": {
+    "C": 2
+   }
+  },
+  {
+   "name": "DMAX HD",
+   "number": 24,
+   "mode": "Satellite",
+   "phy": 12,
+   "tsid": 1002,
+   "sid": 10168,
+   "onid": 1,
+   "favorites": {
+    "A": 30
+   }
+  },
+  {
+   "name": "TLC HD",
+   "number": 25,
+   "mode": "Satellite",
+   "phy": 13,
+   "tsid": 1003,
+   "sid": 10175,
+   "onid": 1,
+   "favorites": {
+    "A": 8
+   }
+  },
+  {
+   "name": "SIXX HD",
+   "number": 26,
+   "mode": "Satellite",
+   "phy": 14,
+   "tsid": 1004,
+   "sid": 10182,
+   "onid": 1,
+   "favorites": {
+    "A": 25
+   }
+  },
+  {
+   "name": "ProSieben MAXX",
+   "number": 27,
+   "mode": "Satellite",
+   "phy": 15,
+   "tsid": 1005,
+   "sid": 10189,
+   "onid": 1,
+   "favorites": {
+    "A": 40,
+    "C": 0
+   }
+  },
+  {
+   "name": "Tele 5 HD",
+   "number": 28,
+   "mode": "Satellite",
+   "phy": 16,
+   "tsid": 1006,
+   "sid": 10196,
+   "onid": 1
+  },
+  {
+   "name": "Comedy Central",
+   "number": 29,
+   "mode": "Satellite",
+   "phy": 17,
+   "tsid": 1007,
+   "sid": 10203,
+   "onid": 1
+  },
+  {
+   "name": "Disney Channel HD",
+   "number": 30,
+   "mode": "Satellite",
+   "phy": 18,
+   "tsid": 1008,
+   "sid": 10210,
+   "onid": 1,
+   "favorites": {
+    "A": 14
+   }
+  },
+  {
+   "name": "BR Fernsehen Süd HD",
+   "number": 31,
+   "mode": "Satellite",
+   "phy": 19,
+   "tsid": 1009,
+   "sid": 10217,
+   "onid": 1,
+   "favorites": {
+    "B": 5
+   }
+  },
+  {
+   "name": "hr-fernsehen HD",
+   "number": 32,
+   "mode": "Satellite",
+   "phy": 20,
+   "tsid": 1010,
+   "sid": 10224,
+   "onid": 1
+  },
+  {
+   "name": "MDR Sachsen HD",
+   "number": 33,
+   "mode": "Satellite",
+   "phy": 21,
+   "tsid": 1011,
+   "sid": 10231,
+   "onid": 1
+  },
+  {
+   "name": "rbb Berlin HD",
+   "number": 34,
+   "mode": "Satellite",
+   "phy": 22,
+   "tsid": 1012,
+   "sid": 10238,
+   "onid": 1
+  },
+  {
+   "name": "SWR BW HD",
+   "number": 35,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1013,
+   "sid": 10245,
+   "onid": 1,
+   "favorites": {
+    "A": 35
+   }
+  },
+  {
+   "name": "WDR HD Köln",
+   "number": 36,
+   "mode": "Satellite",
+   "phy": 24,
+   "tsid": 1014,
+   "sid": 10252,
+   "onid": 1,
+   "favorites": {
+    "H": 2
+   }
+  },
+  {
+   "name": "Radio Bremen TV",
+   "number": 37,
+   "mode": "Satellite",
+   "phy": 25,
+   "tsid": 1015,
+   "sid": 10259,
+   "onid": 1,
+   "favorites": {
+    "A": 43
+   }
+  },
+  {
+   "name": "SR Fernsehen HD",
+   "number": 38,
+   "mode": "Satellite",
+   "phy": 26,
+   "tsid": 1016,
+   "sid": 10266,
+   "onid": 1,
+   "favorites": {
+    "A": 9
+   }
+  },
+  {
+   "name": "NITRO HD",
+   "number": 39,
+   "mode": "Satellite",
+   "phy": 27,
+   "tsid": 1017,
+   "sid": 10273,
+   "onid": 1,
+   "favorites": {
+    "C": 1
+   }
+  },
+  {
+   "name": "RTLup HD",
+   "number": 40,
+   "mode": "Satellite",
+   "phy": 28,
+   "tsid": 1018,
+   "sid": 10280,
+   "onid": 1,
+   "favorites": {
+    "A": 17
+   }
+  },
+  {
+   "name": "kabel eins Doku HD",
+   "number": 41,
+   "mode": "Satellite",
+   "phy": 29,
+   "tsid": 1019,
+   "sid": 10287,
+   "onid": 1,
+   "favorites": {
+    "A": 42
+   }
+  },
+  {
+   "name": "SAT.1 Gold HD",
+   "number": 42,
+   "mode": "Satellite",
+   "phy": 30,
+   "tsid": 1020,
+   "sid": 10294,
+   "onid": 1
+  },
+  {
+   "name": "Deluxe Music HD",
+   "number": 43,
+   "mode": "Satellite",
+   "phy": 31,
+   "tsid": 1021,
+   "sid": 10301,
+   "onid": 1
+  },
+  {
+   "name": "Bibel TV HD",
+   "number": 44,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1022,
+   "sid": 10308,
+   "onid": 1,
+   "favorites": {
+    "A": 41,
+    "C": 3
+   }
+  },
+  {
+   "name": "EWTN",
+   "number": 45,
+   "mode": "Satellite",
+   "phy": 33,
+   "tsid": 1023,
+   "sid": 10315,
+   "onid": 1,
+   "favorites": {
+    "A": 22,
+    "B": 1
+   }
+  },
+  {
+   "name": "Euronews",
+   "number": 46,
+   "mode": "Satellite",
+   "phy": 11,
+   "tsid": 1001,
+   "sid": 10322,
+   "onid": 1
+  },
+  {
+   "name": "BBC World",
+   "number": 47,
+   "mode": "Satellite",
+   "phy": 12,
+   "tsid": 1002,
+   "sid": 10329,
+   "onid": 1,
+   "favorites": {
+    "A": 29
+   }
+  },
+  {
+   "name": "CNN Int.",
+   "number": 48,
+   "mode": "Satellite",
+   "phy": 13,
+   "tsid": 1003,
+   "sid": 10336,
+   "onid": 1,
+   "favorites": {
+    "A": 16,
+    "B": 6
+   }
+  },
+  {
+   "name": "France 24",
+   "number": 49,
+   "mode": "Satellite",
+   "phy": 14,
+   "tsid": 1004,
+   "sid": 10343,
+   "onid": 1,
+   "favorites": {
+    "A": 31
+   }
+  },
+  {
+   "name": "Al Jazeera",
+   "number": 50,
+   "mode": "Satellite",
+   "phy": 15,
+   "tsid": 1005,
+   "sid": 10350,
+   "onid": 1,
+   "favorites": {
+    "A": 7,
+    "B": 8,
+    "D": 2
+   }
+  },
+  {
+   "name": "TV5MONDE",
+   "number": 51,
+   "mode": "Satellite",
+   "phy": 16,
+   "tsid": 1006,
+   "sid": 10357,
+   "onid": 1,
+   "favorites": {
+    "A": 21
+   }
+  },
+  {
+   "name": "Rai 1",
+   "number": 52,
+   "mode": "Satellite",
+   "phy": 17,
+   "tsid": 1007,
+   "sid": 10364,
+   "onid": 1,
+   "favorites": {
+    "A": 18,
+    "H": 0
+   }
+  },
+  {
+   "name": "ORF2E",
+   "number": 53,
+   "mode": "Satellite",
+   "phy": 18,
+   "tsid": 1008,
+   "sid": 10371,
+   "onid": 1,
+   "favorites": {
+    "A": 44
+   }
+  },
+  {
+   "name": "SRF info",
+   "number": 54,
+   "mode": "Satellite",
+   "phy": 19,
+   "tsid": 1009,
+   "sid": 10378,
+   "onid": 1,
+   "favorites": {
+    "A": 28
+   }
+  },
+  {
+   "name": "Bloomberg",
+   "number": 55,
+   "mode": "Satellite",
+   "phy": 20,
+   "tsid": 1010,
+   "sid": 10385,
+   "onid": 1,
+   "favorites": {
+    "A": 36,
+    "B": 2
+   }
+  },
+  {
+   "name": "CGTN",
+   "number": 56,
+   "mode": "Satellite",
+   "phy": 21,
+   "tsid": 1011,
+   "sid": 10392,
+   "onid": 1,
+   "favorites": {
+    "A": 32,
+    "C": 4
+   }
+  },
+  {
+   "name": "NHK World",
+   "number": 57,
+   "mode": "Satellite",
+   "phy": 22,
+   "tsid": 1012,
+   "sid": 10399,
+   "onid": 1,
+   "favorites": {
+    "A": 37,
+    "D": 1
+   }
+  },
+  {
+   "name": "Sky News",
+   "number": 58,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1013,
+   "sid": 10406,
+   "onid": 1,
+   "favorites": {
+    "A": 39
+   }
+  },
+  {
+   "name": "DW",
+   "number": 59,
+   "mode": "Satellite",
+   "phy": 24,
+   "tsid": 1014,
+   "sid": 10413,
+   "onid": 1,
+   "favorites": {
+    "A": 12
+   }
+  },
+  {
+   "name": "TRT World",
+   "number": 60,
+   "mode": "Satellite",
+   "phy": 25,
+   "tsid": 1015,
+   "sid": 10420,
+   "onid": 1,
+   "favorites": {
+    "A": 23,
+    "B": 0,
+    "H": 3
+   }
+  },
+  {
+   "name": "ProSieben MAXX HD",
+   "number": 418,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1107,
+   "sid": 17510,
+   "onid": 1,
+   "tags": [
+    "astra_copy"
+   ],
+   "lcn": 1,
+   "favorites": {
+    "A": 10
+   }
+  },
+  {
+   "name": "ARD-alpha HD",
+   "number": 125,
+   "mode": "Satellite",
+   "phy": 21,
+   "tsid": 1051,
+   "sid": 28487,
+   "onid": 1,
+   "tags": [
+    "astra_copy"
+   ],
+   "lcn": 1,
+   "favorites": {
+    "A": 26
+   }
+  },
+  {
+   "name": "NDR FS HH HD",
+   "number": 101,
+   "mode": "Satellite",
+   "phy": 43,
+   "tsid": 1073,
+   "sid": 28226,
+   "onid": 1,
+   "tags": [
+    "astra_copy"
+   ],
+   "favorites": {
+    "A": 27
+   }
+  },
+  {
+   "name": "HGTV HD",
+   "number": 1827,
+   "mode": "Satellite",
+   "phy": 45,
+   "tsid": 1115,
+   "sid": 5011,
+   "onid": 1,
+   "tags": [
+    "astra_copy"
+   ],
+   "favorites": {
+    "A": 46
+   }
+  },
+  {
+   "name": "WELT HD",
+   "number": 403,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1053,
+   "sid": 21108,
+   "onid": 1,
+   "tags": [
+    "deny_above_99",
+    "welt_hd"
+   ]
+  },
+  {
+   "name": "WELT HD",
+   "number": 1015,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1053,
+   "sid": 21108,
+   "onid": 1,
+   "tags": [
+    "deny_above_99",
+    "welt_hd"
+   ]
+  },
+  {
+   "name": "NDR 2",
+   "number": 101,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1093,
+   "sid": 28426,
+   "onid": 1,
+   "radio": true
+  },
+  {
+   "name": "hr1",
+   "number": 101,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1093,
+   "sid": 28419,
+   "onid": 1,
+   "radio": true
+  },
+  {
+   "name": "Bayern 1",
+   "number": 102,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1093,
+   "sid": 28400,
+   "onid": 1,
+   "radio": true
+  },
+  {
+   "name": "Deutschlandfunk",
+   "number": 103,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1093,
+   "sid": 28420,
+   "onid": 1,
+   "favorites": {
+    "E": 0
+   },
+   "radio": true
+  },
+  {
+   "name": "HSE HD",
+   "number": 160,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1093,
+   "sid": 40003,
+   "onid": 1
+  },
+  {
+   "name": "4mediathek",
+   "number": 4096,
+   "mode": "Satellite",
+   "phy": 11,
+   "tsid": 1041,
+   "sid": 51003,
+   "onid": 1
+  },
+  {
+   "name": "Regional 61",
+   "number": 61,
+   "mode": "Satellite",
+   "phy": 36,
+   "tsid": 1066,
+   "sid": 30061,
+   "onid": 1
+  },
+  {
+   "name": "Regional 62",
+   "number": 62,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1067,
+   "sid": 30062,
+   "onid": 1
+  },
+  {
+   "name": "Regional 63",
+   "number": 63,
+   "mode": "Satellite",
+   "phy": 31,
+   "tsid": 1061,
+   "sid": 30063,
+   "onid": 1
+  },
+  {
+   "name": "Regional 64",
+   "number": 64,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1062,
+   "sid": 30064,
+   "onid": 1
+  },
+  {
+   "name": "Regional 65",
+   "number": 65,
+   "mode": "Satellite",
+   "phy": 33,
+   "tsid": 1063,
+   "sid": 30065,
+   "onid": 1
+  },
+  {
+   "name": "Regional 66",
+   "number": 66,
+   "mode": "Satellite",
+   "phy": 34,
+   "tsid": 1064,
+   "sid": 30066,
+   "onid": 1
+  },
+  {
+   "name": "Regional 67",
+   "number": 67,
+   "mode": "Satellite",
+   "phy": 35,
+   "tsid": 1065,
+   "sid": 30067,
+   "onid": 1
+  },
+  {
+   "name": "Regional 68",
+   "number": 68,
+   "mode": "Satellite",
+   "phy": 36,
+   "tsid": 1066,
+   "sid": 30068,
+   "onid": 1
+  },
+  {
+   "name": "Regional 69",
+   "number": 69,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1067,
+   "sid": 30069,
+   "onid": 1
+  },
+  {
+   "name": "Regional 70",
+   "number": 70,
+   "mode": "Satellite",
+   "phy": 31,
+   "tsid": 1061,
+   "sid": 30070,
+   "onid": 1
+  },
+  {
+   "name": "Regional 71",
+   "number": 71,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1062,
+   "sid": 30071,
+   "onid": 1
+  },
+  {
+   "name": "Regional 72",
+   "number": 72,
+   "mode": "Satellite",
+   "phy": 33,
+   "tsid": 1063,
+   "sid": 30072,
+   "onid": 1
+  },
+  {
+   "name": "Regional 73",
+   "number": 73,
+   "mode": "Satellite",
+   "phy": 34,
+   "tsid": 1064,
+   "sid": 30073,
+   "onid": 1
+  },
+  {
+   "name": "Regional 74",
+   "number": 74,
+   "mode": "Satellite",
+   "phy": 35,
+   "tsid": 1065,
+   "sid": 30074,
+   "onid": 1
+  },
+  {
+   "name": "Regional 75",
+   "number": 75,
+   "mode": "Satellite",
+   "phy": 36,
+   "tsid": 1066,
+   "sid": 30075,
+   "onid": 1
+  },
+  {
+   "name": "Regional 76",
+   "number": 76,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1067,
+   "sid": 30076,
+   "onid": 1
+  },
+  {
+   "name": "Regional 77",
+   "number": 77,
+   "mode": "Satellite",
+   "phy": 31,
+   "tsid": 1061,
+   "sid": 30077,
+   "onid": 1
+  },
+  {
+   "name": "Regional 78",
+   "number": 78,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1062,
+   "sid": 30078,
+   "onid": 1
+  },
+  {
+   "name": "Regional 79",
+   "number": 79,
+   "mode": "Satellite",
+   "phy": 33,
+   "tsid": 1063,
+   "sid": 30079,
+   "onid": 1
+  },
+  {
+   "name": "Regional 80",
+   "number": 80,
+   "mode": "Satellite",
+   "phy": 34,
+   "tsid": 1064,
+   "sid": 30080,
+   "onid": 1
+  },
+  {
+   "name": "Regional 81",
+   "number": 81,
+   "mode": "Satellite",
+   "phy": 35,
+   "tsid": 1065,
+   "sid": 30081,
+   "onid": 1
+  },
+  {
+   "name": "Regional 82",
+   "number": 82,
+   "mode": "Satellite",
+   "phy": 36,
+   "tsid": 1066,
+   "sid": 30082,
+   "onid": 1
+  },
+  {
+   "name": "Regional 83",
+   "number": 83,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1067,
+   "sid": 30083,
+   "onid": 1
+  },
+  {
+   "name": "Regional 84",
+   "number": 84,
+   "mode": "Satellite",
+   "phy": 31,
+   "tsid": 1061,
+   "sid": 30084,
+   "onid": 1
+  },
+  {
+   "name": "Regional 85",
+   "number": 85,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1062,
+   "sid": 30085,
+   "onid": 1
+  },
+  {
+   "name": "Regional 86",
+   "number": 86,
+   "mode": "Satellite",
+   "phy": 33,
+   "tsid": 1063,
+   "sid": 30086,
+   "onid": 1
+  },
+  {
+   "name": "Regional 87",
+   "number": 87,
+   "mode": "Satellite",
+   "phy": 34,
+   "tsid": 1064,
+   "sid": 30087,
+   "onid": 1
+  },
+  {
+   "name": "Regional 88",
+   "number": 88,
+   "mode": "Satellite",
+   "phy": 35,
+   "tsid": 1065,
+   "sid": 30088,
+   "onid": 1
+  },
+  {
+   "name": "Regional 89",
+   "number": 89,
+   "mode": "Satellite",
+   "phy": 36,
+   "tsid": 1066,
+   "sid": 30089,
+   "onid": 1
+  },
+  {
+   "name": "Regional 90",
+   "number": 90,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1067,
+   "sid": 30090,
+   "onid": 1
+  },
+  {
+   "name": "Regional 91",
+   "number": 91,
+   "mode": "Satellite",
+   "phy": 31,
+   "tsid": 1061,
+   "sid": 30091,
+   "onid": 1
+  },
+  {
+   "name": "Regional 92",
+   "number": 92,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1062,
+   "sid": 30092,
+   "onid": 1
+  },
+  {
+   "name": "Regional 93",
+   "number": 93,
+   "mode": "Satellite",
+   "phy": 33,
+   "tsid": 1063,
+   "sid": 30093,
+   "onid": 1
+  },
+  {
+   "name": "Regional 94",
+   "number": 94,
+   "mode": "Satellite",
+   "phy": 34,
+   "tsid": 1064,
+   "sid": 30094,
+   "onid": 1
+  },
+  {
+   "name": "Regional 95",
+   "number": 95,
+   "mode": "Satellite",
+   "phy": 35,
+   "tsid": 1065,
+   "sid": 30095,
+   "onid": 1
+  },
+  {
+   "name": "Das Erste HD",
+   "number": 1,
+   "mode": "Cable",
+   "phy": 100,
+   "tsid": 5,
+   "sid": 600,
+   "onid": 133,
+   "satellite": " "
+  },
+  {
+   "name": "ZDF HD",
+   "number": 2,
+   "mode": "Cable",
+   "phy": 101,
+   "tsid": 5,
+   "sid": 601,
+   "onid": 133,
+   "satellite": " "
+  },
+  {
+   "name": "RTL HD",
+   "number": 13,
+   "mode": "Cable",
+   "phy": 102,
+   "tsid": 5,
+   "sid": 602,
+   "onid": 133,
+   "satellite": " "
+  },
+  {
+   "name": "VOX HD",
+   "number": 30,
+   "mode": "Cable",
+   "phy": 103,
+   "tsid": 5,
+   "sid": 603,
+   "onid": 133,
+   "satellite": " "
+  },
+  {
+   "name": "Sky Sport News",
+   "number": 101,
+   "mode": "Cable",
+   "phy": 104,
+   "tsid": 5,
+   "sid": 604,
+   "onid": 133,
+   "satellite": " "
+  }
+ ]
+}

@@ -1,0 +1,9 @@
+id: timeout_before_mutation
+description: "T31: connection drops on the first changeChannelNumber before anything is written"
+seed: 1001
+rules:
+  - id: number-1-drop-before
+    match: {service: com.webos.service.iepg, method: changeChannelNumber, nth_call: 1}
+    action: {disconnect: before}
+expectations:
+  - state_unchanged: true

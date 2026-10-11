@@ -1,0 +1,33 @@
+# Copy to config/local.toml (git-ignored) and adjust.
+[server]
+ssh_host = "127.0.0.1"
+ssh_port = 2222
+admin_host = "127.0.0.1"
+admin_port = 8767
+
+[authentication]
+username = "root"                     # simulated SSH user name only, no host privileges
+password_env = "LG_TV_SIM_PASSWORD"   # simulator password, never the TV password
+host_key_file = ".simulator/keys/ssh_host_key"
+admin_token_env = "LG_TV_SIM_ADMIN_TOKEN"
+
+[storage]
+base_dir = ".simulator/runs"
+fixtures_dir = "fixtures/synthetic"
+private_fixtures_dir = ".simulator/fixtures"
+scenarios_dir = "fixtures/scenarios"
+initial_fixture = "synthetic_favorites_47"
+
+[behavior]
+profile = "lg_webos22_historical"
+read_after_write_stale_reads = 0
+virtual_ms_per_call = 100
+unknown_commands = "deny"
+unknown_luna_methods = "deny"
+seed = 1001
+# optional: scenario activated at start
+# scenario = "return_false_but_favorite_moved"
+
+[security]
+allow_external_bind = false
+allow_sftp_write = false

@@ -1,0 +1,10 @@
+id: timeout_after_mutation
+description: "T32: first changeChannelNumber is written, then the connection drops before the answer"
+seed: 1001
+rules:
+  - id: number-1-drop-after
+    match: {service: com.webos.service.iepg, method: changeChannelNumber, nth_call: 1}
+    action: {disconnect: after}
+expectations:
+  - write_status_uncertain: true
+  - state_changed: true

@@ -1,0 +1,7 @@
+id: delayed_visibility
+description: "T29: every write is acknowledged, the live list shows it only after 2 further reads"
+seed: 1001
+read_after_write_stale_reads: 2
+rules: []
+expectations:
+  - client_needs_bounded_read_back_retries: true

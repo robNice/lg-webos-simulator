@@ -1,0 +1,51 @@
+# Simulator profile oriented on historical observations with an LG OLED55C27LA (webOS 22).
+# NOT a certified reproduction of every webOS 22 device. Rules are evaluated top-down.
+id: lg_webos22_historical
+description: >-
+  Historical LG webOS 22 behaviour as reported during editor development up to v0.6.1.
+number_min: 1
+number_max: 9999
+read_after_write_stale_reads: 0
+number_rules:
+  - id: deny-tagged-high-target
+    when: {tags_any: [deny_above_99], target_min: 100}
+    effect: DENY
+    error_code: CHANNEL_ERROR_1003
+    error_text: Channel Move Denied
+    evidence: HISTORICAL_REPORTED
+    note: WELT HD on 13 was rejected for high numbers (13 -> 900) and accepted for 99.
+
+  - id: reuse-existing-copy
+    when: {source_mode: Satellite, source_min: 100, target_min: 1, target_max: 99, target_occupant: same_dvb}
+    effect: REUSE_COPY
+    evidence: SIMULATOR_ASSUMPTION
+    note: >-
+      The editor adopts an existing copy without calling changeChannelNumber. Should a client call it
+      anyway, the simulator acknowledges without mutation (no second copy, no displacement).
+
+  - id: astra-copy-high-to-low
+    when: {source_mode: Satellite, source_min: 100, target_min: 1, target_max: 99, target_occupant: none}
+    effect: COPY
+    evidence: HISTORICAL_REPORTED
+    note: >-
+      Pro7 MAXX HD 418 -> 14, ARD-alpha HD 125 -> 26, HGTV HD 1827 -> 26: a new entry with its own ID
+      appeared, the original stayed with its favorite lists; the copy started without favorites.
+
+  - id: swap-occupied-slot
+    when: {target_occupant: one}
+    effect: SWAP
+    evidence: HISTORICAL_REPORTED
+    note: ShopLC HD 21 -> 20 swapped both entries; both got new IDs, favorite lists stayed with the entries.
+
+  - id: deny-ambiguous-target
+    when: {target_occupant: many}
+    effect: DENY
+    error_code: SIM_TARGET_AMBIGUOUS
+    error_text: Target number is used by several entries
+    evidence: SIMULATOR_ASSUMPTION
+
+  - id: move-to-free-slot
+    when: {target_occupant: none}
+    effect: MOVE
+    evidence: HISTORICAL_REPORTED
+    note: Normal renumbering to a free slot (incl. 4mediathek -> 4096 via the API despite the 1-99 TV UI).

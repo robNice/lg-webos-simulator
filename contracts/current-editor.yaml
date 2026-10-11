@@ -1,0 +1,83 @@
+# Compatibility contract: what the CURRENT LG WebOS Channel Editor sends to the TV.
+# Source: ~/PhpstormProjects/lg-webos-channel-editor, APP_VERSION 0.6.1 (HEAD da6eb10 "v0.6.0" plus
+# uncommitted v0.6.1 work, read-only analysis on 2026-10-11). Re-verify after every editor release.
+editor:
+  version: 0.6.1
+  last_hardware_confirmed: 0.5.24
+  ssh_library: paramiko (system python3, 2.12.0 at analysis time)
+  host_key_policy: load_system_host_keys() + RejectPolicy   # needs [127.0.0.1]:2222 in ~/.ssh/known_hosts
+  auth: {username: root, password: true, look_for_keys: false, allow_agent: false}
+  port_configurable: true          # API field "port", default 22
+  pty: false                       # exec_command without get_pty
+
+operations:
+  - operation: login_check
+    source: tv_login.py TvLoginCheck.TOOLS_COMMAND
+    transport: ssh_exec
+    command: "command -v sqlite3 >/dev/null && command -v luna-send >/dev/null"
+    expects: exit_status 0
+    timeout_s: 10
+    verified_against_current_editor: true
+    simulator: exact-string match, exit 0
+
+  - operation: read_channel_backup
+    source: app.py import_from_tv / tv_sync_preflight
+    transport: ssh_exec_then_sftp
+    remote_path: /mnt/lg/cmn_data/iepg/db/channel.sql
+    command_template: "sqlite3 -readonly /mnt/lg/cmn_data/iepg/db/channel.sql '.backup /tmp/lg-favoriten-<hex32>.sqlite'"
+    alt_temp_name: "/tmp/lg-favorites-preflight-<hex32>.sqlite"
+    timeout_s: [35, 40]
+    expects: exit_status 0, otherwise stderr shown
+    sftp: [stat (st_size <= 30 MiB), get]
+    remote_cleanup: "rm -f /tmp/<name>.sqlite"   # timeout 8 s, errors ignored
+    verified_against_current_editor: true
+    verified_against_real_tv: historical (v0.5.24)
+
+  - operation: read_group_name
+    source: tv_groups.py GroupNameSync.read_name_from_tv
+    transport: ssh_exec
+    command_template: 'sqlite3 -readonly /mnt/lg/cmn_data/iepg/db/channel.sql "SELECT user_edited_name FROM channel_group_tuner WHERE channel_group_id=<200..207>"'
+    output: sqlite3 list mode, one value per line
+    verified_against_current_editor: true
+
+  - operation: luna_call
+    source: tv_write.py luna()
+    transport: ssh_exec
+    command_template: "luna-send -n 1 luna://<service>/<method> <shlex.quote(compact JSON)>"
+    timeout_s: 45
+    expects: exit_status 0, stdout = one JSON object (parse_luna strips whitespace)
+    verified_against_current_editor: true
+
+luna:
+  - {service: com.webos.service.iepg, method: getChannelList,
+     params: {dataType: 0, sort: 0, channelMode: Satellite, channelGroup: [All], acceptEmptyGroupName: false,
+              attribute: [{filterType: Invisible, value: false}]},
+     reads: [channelList, returnValue],
+     row_fields_read: [channelId, channelNumber, channelName, satelliteName, favoriteGroup, favoriteIdxA..H],
+     evidence: CURRENT_CLIENT_CONFIRMED}
+  - {service: com.webos.service.iepg, method: changeChannelNumber,
+     params: {channelId: str, channelNumber: int}, reads: [returnValue, errorCode, errorText],
+     note: "since v0.6.0 via iepg (formerly legacybroadcast.channel)", evidence: CURRENT_CLIENT_CONFIRMED}
+  - {service: com.webos.service.iepg, method: setChannelFavoriteGroup,
+     params: {channelId: [str], favoriteGroup: [A-H]}, reads: [returnValue], evidence: CURRENT_CLIENT_CONFIRMED}
+  - {service: com.webos.service.iepg, method: releaseChannelFavoriteGroup,
+     params: {channelId: [str], favoriteGroup: [A-H]}, reads: [returnValue], evidence: CURRENT_CLIENT_CONFIRMED}
+  - {service: com.webos.service.iepg, method: moveChannelFavoritePriority,
+     params: {favoriteGroupId: 0..7, channelId: [str], destinationChannelId: str, direction: up},
+     reads: [returnValue], evidence: CURRENT_CLIENT_CONFIRMED}
+  - {service: com.webos.service.iepg, method: setGroupName,
+     params: {channelMode: TUNER, channelGroupId: 200..207, channelGroupName: str},
+     reads: [returnValue, errorText, errorCode], verified_by: read_group_name, evidence: CURRENT_CLIENT_CONFIRMED}
+
+not_used_by_current_editor:
+  - com.webos.service.legacybroadcast.channel/changeChannelNumber   # used up to v0.5.x; simulated identically
+  - com.webos.service.legacybroadcast.channel/getChannel            # simulated (read-only)
+  - com.webos.service.legacybroadcast.channel/copyDvbSatelliteChannelForAstra  # deliberately UNSUPPORTED
+  - getChannelList with compressed: 1                                # UNSUPPORTED (fails closed)
+
+database_contract:   # app.validate_database
+  tuner_on: [dvc_chan_id, chan_std_name, chan_no_int, mso_prdt_itm_code, fav_chan_gr_a..h, favoriteIdxA..H]
+  tuner_off: [dvc_chan_id, mso_prdt_itm_code, fav_chan_gr_a..h, favoriteIdxA..H]
+  favorite_idx: [dvc_chan_id, fav_chan_gr_a..h, favoriteIdxA..H]
+  channel_group_tuner: [channel_group_id, user_edited_name, is_favorite_group]
+  additionally_read: [chan_no, sat_name, chan_mode_name, satelliteLcn_flag, signal_chan_id, channel_group_name]

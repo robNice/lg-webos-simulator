@@ -1,0 +1,40 @@
+# Simulator configuration for the Docker container. SIMULATOR – not a real LG TV.
+# On first start the image copies this template to /config/simulator.toml (mapped directory); the copy is
+# yours to edit and is never overwritten. Restart the container after changes. Delete the file to get a
+# fresh copy of the current template.
+
+[server]
+# Inside the container: keep 0.0.0.0, otherwise Docker cannot reach the simulator (refused at start).
+# Choose the host side in docker-compose ("127.0.0.1:2222:2222"), not here.
+ssh_host = "0.0.0.0"
+ssh_port = 2222
+admin_host = "0.0.0.0"
+admin_port = 8767                     # never 8765/8766 (reserved for the Channel Editor)
+
+[authentication]
+username = "root"                     # simulated SSH user name only, no container privileges
+password_env = "LG_TV_SIM_PASSWORD"   # simulator password, never the TV password; else generated
+host_key_file = ".simulator/keys/ssh_host_key"
+admin_token_env = "LG_TV_SIM_ADMIN_TOKEN"
+
+[storage]
+# Relative to /app; .simulator is the data volume.
+base_dir = ".simulator/runs"
+fixtures_dir = "fixtures/synthetic"
+private_fixtures_dir = ".simulator/fixtures"
+scenarios_dir = "fixtures/scenarios"
+initial_fixture = "synthetic_favorites_47"
+
+[behavior]
+profile = "lg_webos22_historical"
+read_after_write_stale_reads = 0
+virtual_ms_per_call = 100
+unknown_commands = "deny"
+unknown_luna_methods = "deny"
+seed = 1001
+# optional: scenario activated at start
+# scenario = "return_false_but_favorite_moved"
+
+[security]
+allow_external_bind = true   # deliberate: container interfaces only; publish on 127.0.0.1 on the host
+allow_sftp_write = false

@@ -1,0 +1,26 @@
+# LG webOS TV Simulator – example for Docker Compose. Copy, adjust, then: docker compose up -d
+# SIMULATOR – not a real LG TV. Publish the ports on 127.0.0.1 only (the admin UI has no login of its own
+# unless LG_TV_SIM_ADMIN_TOKEN is set, and it accepts only localhost Host headers).
+
+services:
+  lg-tv-sim:
+    image: ghcr.io/robnice/lg-webos-simulator:latest   # or :dev for test builds, or a fixed version like :0.1.0
+    container_name: lg-tv-sim
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:2222:2222"   # SSH/SFTP for the editor (host IP:host port:container port)
+      - "127.0.0.1:8767:8767"   # admin UI – never 8765/8766, those belong to the Channel Editor
+    volumes:
+      # simulator.toml is created here on first start (from the image template) and never overwritten.
+      - ./config:/config
+      # runs, SSH host key, generated password (credentials), imported private fixtures
+      - simulator-data:/app/.simulator
+    environment:
+      TZ: Europe/Berlin
+      PUID: "1000"   # owner of ./config/simulator.toml on the host (id -u); never 0
+      PGID: "1000"   # (id -g)
+      # LG_TV_SIM_PASSWORD: "choose-one"      # otherwise generated into the volume (.simulator/credentials)
+      # LG_TV_SIM_ADMIN_TOKEN: "choose-one"   # optional X-Sim-Token for the admin API
+
+volumes:
+  simulator-data:

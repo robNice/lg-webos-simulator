@@ -1,0 +1,10 @@
+id: fail_after_second_step
+description: "T33: the third changeChannelNumber of a sequence fails; steps 1-2 stay applied (no rollback)"
+seed: 1001
+rules:
+  - id: number-3-drop
+    match: {service: com.webos.service.iepg, method: changeChannelNumber, nth_call: 3}
+    action: {disconnect: before}
+expectations:
+  - first_two_steps_applied: true
+  - automatic_rollback: false

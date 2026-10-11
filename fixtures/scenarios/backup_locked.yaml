@@ -1,0 +1,7 @@
+id: backup_locked
+description: "sqlite3 .backup fails once with 'database is locked'"
+seed: 1001
+rules:
+  - id: backup-1-locked
+    match: {command: backup, nth_call: 1}
+    action: {exit_status: 1, stderr: "Error: database is locked\n", mutate: false}

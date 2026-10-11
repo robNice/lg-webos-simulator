@@ -1,0 +1,10 @@
+id: copy_instead_of_move
+description: "T30: first changeChannelNumber answers true but creates a COPY instead of a MOVE"
+seed: 1001
+rules:
+  - id: number-1-copy
+    match: {service: com.webos.service.iepg, method: changeChannelNumber, nth_call: 1}
+    action: {effect: COPY}
+expectations:
+  - original_still_on_old_number: true
+  - additional_entry_on_target: true

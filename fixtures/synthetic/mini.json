@@ -1,0 +1,227 @@
+{
+ "name": "mini",
+ "version": 1,
+ "seed": 1,
+ "description": "Small synthetic list: WELT HD triple, shared number 101, swap pair 20/21, existing Astra copy (HGTV HD 1827/26), same-name services, cable mode.",
+ "channels": [
+  {
+   "name": "Das Erste HD",
+   "number": 1,
+   "mode": "Satellite",
+   "phy": 29,
+   "tsid": 1019,
+   "sid": 10301,
+   "onid": 1,
+   "favorites": {
+    "A": 0
+   }
+  },
+  {
+   "name": "ZDF HD",
+   "number": 2,
+   "mode": "Satellite",
+   "phy": 21,
+   "tsid": 1011,
+   "sid": 11110,
+   "onid": 1,
+   "favorites": {
+    "A": 1,
+    "B": 0
+   }
+  },
+  {
+   "name": "RTL HD",
+   "number": 3,
+   "mode": "Satellite",
+   "phy": 27,
+   "tsid": 1017,
+   "sid": 61200,
+   "onid": 1,
+   "favorites": {
+    "A": 2
+   }
+  },
+  {
+   "name": "SAT.1 HD",
+   "number": 4,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1107,
+   "sid": 17500,
+   "onid": 1
+  },
+  {
+   "name": "ProSieben HD",
+   "number": 5,
+   "mode": "Satellite",
+   "phy": 37,
+   "tsid": 1107,
+   "sid": 17501,
+   "onid": 1,
+   "favorites": {
+    "A": 3,
+    "C": 0
+   }
+  },
+  {
+   "name": "WELT HD",
+   "number": 13,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1053,
+   "sid": 21108,
+   "onid": 1,
+   "favorites": {
+    "A": 4
+   },
+   "tags": [
+    "deny_above_99",
+    "welt_hd"
+   ]
+  },
+  {
+   "name": "ShopLC HD",
+   "number": 20,
+   "mode": "Satellite",
+   "phy": 41,
+   "tsid": 1031,
+   "sid": 4401,
+   "onid": 1,
+   "favorites": {
+    "B": 1
+   }
+  },
+  {
+   "name": "QVC HD",
+   "number": 21,
+   "mode": "Satellite",
+   "phy": 41,
+   "tsid": 1031,
+   "sid": 4402,
+   "onid": 1,
+   "favorites": {
+    "A": 5
+   }
+  },
+  {
+   "name": "HSE HD",
+   "number": 30,
+   "mode": "Satellite",
+   "phy": 41,
+   "tsid": 1031,
+   "sid": 4403,
+   "onid": 1
+  },
+  {
+   "name": "HSE HD",
+   "number": 31,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1093,
+   "sid": 4403,
+   "onid": 1
+  },
+  {
+   "name": "ARD-alpha HD",
+   "number": 125,
+   "mode": "Satellite",
+   "phy": 21,
+   "tsid": 1051,
+   "sid": 28487,
+   "onid": 1,
+   "favorites": {
+    "A": 6
+   },
+   "lcn": 1
+  },
+  {
+   "name": "HGTV HD",
+   "number": 1827,
+   "mode": "Satellite",
+   "phy": 45,
+   "tsid": 1115,
+   "sid": 5011,
+   "onid": 1,
+   "favorites": {
+    "A": 7
+   }
+  },
+  {
+   "name": "HGTV HD",
+   "number": 26,
+   "mode": "Satellite",
+   "phy": 45,
+   "tsid": 1115,
+   "sid": 5011,
+   "onid": 1,
+   "favorites": {
+    "C": 1
+   }
+  },
+  {
+   "name": "WELT HD",
+   "number": 403,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1053,
+   "sid": 21108,
+   "onid": 1,
+   "tags": [
+    "deny_above_99",
+    "welt_hd"
+   ]
+  },
+  {
+   "name": "WELT HD",
+   "number": 1015,
+   "mode": "Satellite",
+   "phy": 32,
+   "tsid": 1053,
+   "sid": 21108,
+   "onid": 1,
+   "tags": [
+    "deny_above_99",
+    "welt_hd"
+   ]
+  },
+  {
+   "name": "NDR FS HH HD",
+   "number": 101,
+   "mode": "Satellite",
+   "phy": 43,
+   "tsid": 1073,
+   "sid": 28226,
+   "onid": 1
+  },
+  {
+   "name": "NDR 2",
+   "number": 101,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1093,
+   "sid": 28426,
+   "onid": 1,
+   "radio": true
+  },
+  {
+   "name": "Das Erste HD",
+   "number": 1,
+   "mode": "Cable",
+   "phy": 23,
+   "tsid": 5,
+   "sid": 62,
+   "onid": 133,
+   "satellite": " "
+  },
+  {
+   "name": "RTL HD",
+   "number": 13,
+   "mode": "Cable",
+   "phy": 24,
+   "tsid": 5,
+   "sid": 1793,
+   "onid": 133,
+   "satellite": " "
+  }
+ ]
+}

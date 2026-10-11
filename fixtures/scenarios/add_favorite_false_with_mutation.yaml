@@ -1,0 +1,12 @@
+id: add_favorite_false_with_mutation
+description: "first setChannelFavoriteGroup answers false although the membership was added"
+seed: 1001
+evidence: HISTORICAL_REPORTED
+rules:
+  - id: add-1-false-mutated
+    match: {service: com.webos.service.iepg, method: setChannelFavoriteGroup, nth_call: 1}
+    action:
+      mutate: true
+      response: {returnValue: false}
+expectations:
+  - membership_changed: true

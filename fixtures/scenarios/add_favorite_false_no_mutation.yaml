@@ -1,0 +1,11 @@
+id: add_favorite_false_no_mutation
+description: "T28: first setChannelFavoriteGroup answers false and changes nothing"
+seed: 1001
+rules:
+  - id: add-1-false-no-mutation
+    match: {service: com.webos.service.iepg, method: setChannelFavoriteGroup, nth_call: 1}
+    action:
+      mutate: false
+      response: {returnValue: false}
+expectations:
+  - membership_changed: false

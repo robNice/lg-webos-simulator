@@ -1,0 +1,8 @@
+id: slow_write_answer
+description: "changeChannelNumber is written immediately but answered only after 3 s (client timeout tests)"
+seed: 1001
+rules:
+  - id: number-slow
+    match: {service: com.webos.service.iepg, method: changeChannelNumber}
+    action: {hang_ms: 3000}
+    times: null

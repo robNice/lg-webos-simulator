@@ -1,0 +1,28 @@
+# Runtime state, keys, credentials, private TV data — never commit
+.simulator/
+fixtures/private/*
+!fixtures/private/README.md
+logs/private/
+*.key
+*.pem
+.env
+config/local.toml
+
+# Python
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# IDE
+.idea/workspace.xml
+.idea/shelf/
+/_project_files/
+/.idea/
+/_project_files/
+
+# Local design sources and screenshots (not part of the repo)
+_project_files/

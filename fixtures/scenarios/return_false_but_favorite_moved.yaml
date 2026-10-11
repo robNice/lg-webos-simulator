@@ -1,0 +1,14 @@
+id: return_false_but_favorite_moved
+description: "T27: 2nd moveChannelFavoritePriority changes the order but answers returnValue:false"
+fixture: synthetic_favorites_47
+seed: 1001
+evidence: HISTORICAL_REPORTED
+rules:
+  - id: move-2-false
+    match: {service: com.webos.service.iepg, method: moveChannelFavoritePriority, nth_call: 2}
+    action:
+      mutate: true
+      response: {returnValue: false}
+expectations:
+  - actual_favorite_order_changed: true
+  - editor_must_read_back: true
