@@ -1,4 +1,4 @@
-# Copy to config/local.toml (git-ignored) and adjust.
+# Copy to config/local.toml (git-ignored) and adjust
 [server]
 ssh_host = "127.0.0.1"
 ssh_port = 2222
