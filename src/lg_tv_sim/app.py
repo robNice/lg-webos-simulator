@@ -39,7 +39,8 @@ class Simulator:
         self.config = config
         self.lock = threading.RLock()
         storage = config.storage
-        self.catalog = FixtureCatalog(config.path(storage.fixtures_dir), config.path(storage.private_fixtures_dir))
+        self.catalog = FixtureCatalog(config.path(storage.fixtures_dir), config.path(storage.private_fixtures_dir),
+                                      config.path(storage.recorded_fixtures_dir))
         self.runs = RunManager(config.path(storage.base_dir))
         self.username = config.authentication.username
         self.password = password if password is not None else resolve_password(config)
@@ -88,7 +89,7 @@ class Simulator:
             self.journal.clear(run.journal_path)
             if self.engine is None:
                 self.engine = TvEngine(run, profile, self.clock, stale_reads_default=stale)
-                self.dispatcher = LunaDispatcher(self.engine, self.faults, self.journal)
+                self.dispatcher = LunaDispatcher(self.engine, self.faults, self.journal, self.config.device)
                 self.router = CommandRouter(self.engine, self.dispatcher, self.vfs, self.faults, self.journal)
             else:
                 self.engine.profile, self.engine.stale_reads_default = profile, stale
@@ -155,7 +156,8 @@ class Simulator:
     def status(self) -> dict:
         engine = self.engine
         entries = engine.true_entries()
-        groups = {g: sum(1 for e in entries if e.groups[g]) for g in 'ABCDEFGH'}
+        ip = engine.ip_entries()
+        groups = {g: sum(1 for e in (*entries, *ip) if e.groups[g]) for g in 'ABCDEFGH'}   # tuner_on and ip
         return {
             'simulator': 'SIMULATOR – not a real LG TV', 'version': __version__,
             'run_id': self.run.id, 'fixture': self.fixture_name, 'fixture_hash': self.fixture_hash,
@@ -165,12 +167,15 @@ class Simulator:
             'username': self.username, 'channels': len(entries),
             'modes': {m: sum(1 for e in entries if e.mode == m) for m in sorted({e.mode for e in entries})},
             'favorites': groups, 'group_names': engine.group_names(),
+            'ip': {'channels': len(ip), 'favorites': {g: n for g in 'ABCDEFGH'
+                                                      if (n := sum(1 for e in ip if e.groups[g]))}},
             'connections': len(self.connections), 'active_writers': self.active_writers(),
             'stale_view': engine.stale_status(), 'virtual_ms': self.clock.now_ms,
             'snapshots': self.run.snapshots(), 'events': len(self.journal.events()),
         }
 
-    def channels(self) -> list[dict]:
+    def channels(self, include_ip: bool = False) -> list[dict]:
+        """Tuner entries (what Luna knows); with ``include_ip`` also the read-only LG Channels (table ip)."""
         engine = self.engine
         result = []
         for entry in engine.true_entries():
@@ -180,7 +185,13 @@ class Simulator:
                            'sim_entry_id': record.sim_entry_id if record else None,
                            'copy_of': record.copy_of if record else None,
                            'id_history': record.id_history if record else [],
-                           'tags': record.tags if record else []})
+                           'tags': record.tags if record else [], 'read_only': False})
+        if include_ip:
+            for entry in engine.ip_entries():
+                result.append({**asdict(entry), 'dvb': str(entry.dvb), 'groups': entry.member_of,
+                               'index': {g: entry.index[g] for g in entry.member_of},
+                               'sim_entry_id': engine.sim_id(entry), 'copy_of': None, 'id_history': [], 'tags': [],
+                               'read_only': True})
         return result
 
     def export_state(self, destination: Path) -> dict:

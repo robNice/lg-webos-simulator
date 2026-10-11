@@ -21,9 +21,10 @@ admin_token_env = "LG_TV_SIM_ADMIN_TOKEN"
 # Relative to /app; .simulator is the data volume.
 base_dir = ".simulator/runs"
 fixtures_dir = "fixtures/synthetic"
+recorded_fixtures_dir = "fixtures/recorded"   # real TV backups, sanitised (import-fixture --public)
 private_fixtures_dir = ".simulator/fixtures"
 scenarios_dir = "fixtures/scenarios"
-initial_fixture = "synthetic_favorites_47"
+initial_fixture = "real_20261011_2301"
 
 [behavior]
 profile = "lg_webos22_historical"
@@ -34,6 +35,12 @@ unknown_luna_methods = "deny"
 seed = 1001
 # optional: scenario activated at start
 # scenario = "return_false_but_favorite_moved"
+
+[device]
+# Reported by getSystemInfo (editor v0.6.4 keeps backups per model + serial). The serial must start with "SIM-"
+# so simulator backups never land in the real TV's backup folder.
+model_name = "OLED55C27LA"
+serial_number = "SIM-000000000001"
 
 [security]
 allow_external_bind = true   # deliberate: container interfaces only; publish on 127.0.0.1 on the host

@@ -26,3 +26,7 @@ dist/
 
 # Local design sources and screenshots (not part of the repo)
 _project_files/
+
+# Local working notes, not part of the repository
+AGENTS.md
+CHANGELOG.md

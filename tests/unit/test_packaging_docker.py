@@ -19,12 +19,19 @@ def test_version_has_a_single_source():
     project = tomllib.loads((REPO / 'pyproject.toml').read_text(encoding='utf-8'))
     assert 'version' not in project['project']
     assert 'version' in project['project']['dynamic']
-    assert project['tool']['setuptools']['dynamic']['version'] == {'attr': 'lg_tv_sim.__version__'}
+    assert project['tool']['setuptools']['dynamic']['version'] == {'attr': 'lg_tv_sim.version.__version__'}
+    version_file = (REPO / 'src' / 'lg_tv_sim' / 'version.py').read_text(encoding='utf-8')
+    assert re.search(rf"^__version__ = '{re.escape(__version__)}'$", version_file, re.M)
+    init = (REPO / 'src' / 'lg_tv_sim' / '__init__.py').read_text(encoding='utf-8')
+    assert 'from lg_tv_sim.version import __version__' in init and "__version__ = '" not in init
     assert re.fullmatch(r'\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?', __version__)
 
 
 def test_changelog_documents_current_version():
-    changelog = (REPO / 'CHANGELOG.md').read_text(encoding='utf-8')
+    path = REPO / 'CHANGELOG.md'
+    if not path.is_file():   # local working file, git-ignored: absent in CI checkouts
+        pytest.skip('CHANGELOG.md is not part of the repository')
+    changelog = path.read_text(encoding='utf-8')
     assert re.search(rf'^## v{re.escape(__version__)} – ', changelog, re.M)
 
 
@@ -106,7 +113,7 @@ def test_release_workflow_requires_tag_on_main_matching_version():
     text = (WORKFLOWS / 'docker-image.yml').read_text(encoding='utf-8')
     assert '- "v*"' in text
     assert 'origin/main' in text
-    assert 'lg_tv_sim.__version__' in text or 'from lg_tv_sim import __version__' in text
+    assert 'from lg_tv_sim.version import __version__' in text
     assert 'pytest' in text and 'ruff check' in text
     assert ':latest' in text and 'is_prerelease' in text
 

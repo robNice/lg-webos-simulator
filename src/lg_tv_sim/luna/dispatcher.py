@@ -7,13 +7,15 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
+from lg_tv_sim.config import DeviceConfig
 from lg_tv_sim.domain.engine import EngineResult, TvEngine
 from lg_tv_sim.domain.models import GROUPS, InvariantViolation, LunaError
 from lg_tv_sim.faults.engine import AppliedFault, CallInfo, FaultEngine
-from lg_tv_sim.luna import iepg, legacybroadcast
+from lg_tv_sim.luna import iepg, legacybroadcast, systemproperty
 from lg_tv_sim.traces.recorder import Journal
 
-REGISTRY = {iepg.SERVICE: iepg.HANDLERS, legacybroadcast.SERVICE: legacybroadcast.HANDLERS}
+REGISTRY = {iepg.SERVICE: iepg.HANDLERS, legacybroadcast.SERVICE: legacybroadcast.HANDLERS,
+            systemproperty.SERVICE: systemproperty.HANDLERS}
 
 
 @dataclass
@@ -27,8 +29,9 @@ class LunaOutcome:
 
 
 class LunaDispatcher:
-    def __init__(self, engine: TvEngine, faults: FaultEngine, journal: Journal):
+    def __init__(self, engine: TvEngine, faults: FaultEngine, journal: Journal, device: DeviceConfig | None = None):
         self.engine, self.faults, self.journal = engine, faults, journal
+        self.device = device if device is not None else DeviceConfig()
 
     def call_info(self, service: str, method: str, params: dict) -> CallInfo:
         ids: list[str] = []
@@ -66,7 +69,7 @@ class LunaDispatcher:
             result.effect = 'UNSUPPORTED'
         else:
             try:
-                result = handler(self.engine, params, fault=fault)
+                result = handler(self.engine, params, fault=fault, device=self.device)
                 response = result.value
             except LunaError as exc:
                 response = exc.response()

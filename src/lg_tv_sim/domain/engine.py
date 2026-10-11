@@ -25,6 +25,7 @@ from lg_tv_sim.domain.models import (
     LunaError,
     Mutation,
     NumberEffect,
+    UnsupportedIpChannel,
     is_member_flag,
     user_fav_json,
 )
@@ -103,8 +104,20 @@ class TvEngine:
                                      'mso_prdt_itm_code').fetchall()
             return [ChannelEntry.from_row(r) for r in rows]
 
+    def ip_entries(self) -> list[ChannelEntry]:
+        """LG Channels (table ip), read-only; empty if the fixture has no ip table."""
+        with self.lock:
+            if not self.conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ip'").fetchone():
+                return []
+            rows = self.conn.execute('SELECT * FROM ip ORDER BY chan_no_int, dvc_chan_id').fetchall()
+            return [ChannelEntry.from_row(r) for r in rows]
+
+    def all_entries(self) -> list[ChannelEntry]:
+        """Tuner entries and LG Channels: everything getChannelList can report (E2)."""
+        return self.true_entries() + self.ip_entries()
+
     def visible_entries(self, consume: bool = True) -> tuple[list[ChannelEntry], bool]:
-        """Entries as the Luna read API currently shows them; second value: served from a stale view."""
+        """Entries (tuner and IP) as the Luna read API currently shows them; second value: stale view."""
         with self.lock:
             stale = self._stale
             if stale is not None and stale.active(self.clock.now_ms):
@@ -112,7 +125,7 @@ class TvEngine:
                     stale.remaining_reads -= 1
                 return stale.entries, True
             self._stale = None
-            return self.true_entries(), False
+            return self.all_entries(), False
 
     def stale_status(self) -> dict | None:
         with self.lock:
@@ -195,13 +208,27 @@ class TvEngine:
             return result
 
     def _entry_by_key(self, key: tuple[str, str]) -> ChannelEntry | None:
-        row = self.conn.execute('SELECT * FROM tuner_on WHERE dvc_chan_id=? AND mso_prdt_itm_code=?', key).fetchone()
-        return ChannelEntry.from_row(row) if row else None
+        table = favorites.table_of(self.conn, key)
+        if table is None:
+            return None
+        row = self.conn.execute(f'SELECT * FROM {table} WHERE dvc_chan_id=? AND mso_prdt_itm_code=?', key).fetchone()
+        return ChannelEntry.from_row(row)
 
-    def resolve(self, channel_id: str) -> ChannelEntry:
-        """The real entry for a current channel ID; old IDs are not silently accepted."""
-        matches = [e for e in self.true_entries() if e.channel_id == channel_id]
+    def reject_ip_channel(self, channel_id: str) -> None:
+        """LG Channels (table ``ip``) cannot be renumbered (E9); refuse with a simulator code (U4)."""
+        with self.lock:
+            has_ip = self.conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ip'").fetchone()
+            if has_ip and self.conn.execute('SELECT 1 FROM ip WHERE dvc_chan_id=?', (channel_id,)).fetchone():
+                raise UnsupportedIpChannel(channel_id)
+
+    def resolve(self, channel_id: str, allow_ip: bool = False) -> ChannelEntry:
+        """The real entry for a current channel ID; old IDs are not silently accepted.
+
+        LG Channels are found only with ``allow_ip`` (favorite calls, getChannel); number changes refuse them.
+        """
+        matches = [e for e in (self.all_entries() if allow_ip else self.true_entries()) if e.channel_id == channel_id]
         if not matches:
+            self.reject_ip_channel(channel_id)
             raise LunaError('CHANNEL_ERROR_NOT_FOUND', f'Channel not found: {channel_id}')
         if len(matches) > 1:
             raise LunaError('SIM_CHANNEL_ID_AMBIGUOUS', f'Channel ID is used by {len(matches)} entries: {channel_id}')
@@ -320,12 +347,13 @@ class TvEngine:
                       stale_reads: int | None = None, stale_ms: int | None = None) -> EngineResult:
         def body() -> EngineResult:
             mutations = []
+            layout = self.profile.favorites
             for channel_id in channel_ids:
-                entry = self.resolve(channel_id)
+                entry = self.resolve(channel_id, allow_ip=True)
                 key = (entry.channel_id, entry.mso)
                 changed = False
                 for group in groups:
-                    changed |= (favorites.add if member else favorites.release)(self.conn, group, key)
+                    changed |= (favorites.add if member else favorites.release)(self.conn, group, key, layout)
                 if changed:
                     mutations.append(self._record(key, entry, ('add ' if member else 'release ') + ','.join(groups)))
             return EngineResult(mutations=mutations, effect='FAVORITE_ADD' if member else 'FAVORITE_RELEASE')
@@ -335,19 +363,23 @@ class TvEngine:
     def move_favorite(self, group: str, channel_id: str, destination_id: str, direction: str, *,
                       mutate: bool = True, stale_reads: int | None = None, stale_ms: int | None = None) -> EngineResult:
         def body() -> EngineResult:
-            source = self.resolve(channel_id)
-            destination = self.resolve(destination_id)
+            source = self.resolve(channel_id, allow_ip=True)
+            destination = self.resolve(destination_id, allow_ip=True)
+            layout = self.profile.favorites
             before_order = favorites.members(self.conn, group)
-            try:
-                changed = favorites.move(self.conn, group, (source.channel_id, source.mso),
-                                         (destination.channel_id, destination.mso), direction)
-            except LookupError as exc:
-                raise LunaError('FAVORITE_ERROR_NOT_MEMBER', str(exc)) from exc
+            source_key, destination_key = (source.channel_id, source.mso), (destination.channel_id, destination.mso)
+            if source_key not in before_order or destination_key not in before_order:
+                raise LunaError('FAVORITE_ERROR_NOT_MEMBER', 'source or destination is not a member of the group')
+            if favorites.crosses_ip_block(self.conn, source_key, destination_key, layout):
+                # U1 (SIMULATOR_ASSUMPTION): the IP block stays behind the tuner members; the TV answer is
+                # modelled as success, so only reading back reveals that nothing moved.
+                return EngineResult(effect='FAVORITE_ORDER_BLOCKED_IP')
+            changed = favorites.move(self.conn, group, source_key, destination_key, direction, layout)
             if not changed:
                 return EngineResult(effect='FAVORITE_ORDER_UNCHANGED')
             after_order = favorites.members(self.conn, group)
             moved = {k for k in after_order if before_order.index(k) != after_order.index(k)}
-            entries = {(e.channel_id, e.mso): e for e in self.true_entries()}
+            entries = {(e.channel_id, e.mso): e for e in self.all_entries()}
             mutations = [Mutation(self.sim_id(entries[k]) or '?', None, entries[k].snapshot(), f'order {group}')
                          for k in sorted(moved)]
             return EngineResult(mutations=mutations, effect='FAVORITE_MOVE')
@@ -386,22 +418,45 @@ class TvEngine:
             for column in compared:
                 if on[key][column] != off[key][column]:
                     problems.add(f'tuner_off.{column} differs for {key}')
+        ip = ({(r['dvc_chan_id'], r['mso_prdt_itm_code']): r for r in self.conn.execute('SELECT * FROM ip')}
+              if favorites.has_ip_table(self.conn) else {})
         for key, row in on.items():
             if str(row['chan_no']) != str(row['chan_no_int']):
                 problems.add(f'chan_no/chan_no_int mismatch for {key}')
+        for key, row in (*on.items(), *ip.items()):
             groups = [g for g in GROUPS if is_member_flag(row[f'fav_chan_gr_{g.lower()}'])]
             stored = row['user_fav_chan_gr']
             if stored and stored != user_fav_json(groups):
                 problems.add(f'user_fav_chan_gr inconsistent for {key}')
+        layout = self.profile.favorites
+        fav_rows = {r['dvc_chan_id']: r for r in self.conn.execute('SELECT * FROM favorite_idx')}
         for g in GROUPS:
-            indices = sorted(int(r[f'favoriteIdx{g}']) for r in on.values()
-                             if is_member_flag(r[f'fav_chan_gr_{g.lower()}']))
-            if indices != list(range(len(indices))):
-                problems.add(f'favorite positions of {g} are not 0..n-1')
-            if any(r[f'favoriteIdx{g}'] not in (NOT_MEMBER_INDEX, None) for r in on.values()
-                   if not is_member_flag(r[f'fav_chan_gr_{g.lower()}'])):
+            flag, idx = f'fav_chan_gr_{g.lower()}', f'favoriteIdx{g}'
+            tuner = sorted(int(r[idx]) for r in on.values() if is_member_flag(r[flag]))
+            ip_positions = sorted(int(r[idx]) for r in ip.values() if is_member_flag(r[flag]))
+            if len(set(tuner + ip_positions)) != len(tuner) + len(ip_positions):
+                problems.add(f'duplicate favorite positions in {g} (tuner_on and ip)')
+            if layout.ip_block_after_tuner:
+                if tuner != list(range(len(tuner))):
+                    problems.add(f'favorite positions of {g} are not 0..n-1')
+                first = layout.ip_first_index
+                if any(i < first for i in ip_positions):
+                    problems.add(f'IP favorite positions of {g} below {first}')
+                if ip_positions != list(range(first, first + len(ip_positions))):
+                    problems.add(f'IP favorite positions of {g} are not {first}..')
+            elif sorted(tuner + ip_positions) != list(range(len(tuner) + len(ip_positions))):
+                problems.add(f'favorite positions of {g} are not 0..n-1 (joint order)')
+            if any(r[idx] not in (NOT_MEMBER_INDEX, None) for r in on.values() if not is_member_flag(r[flag])):
                 problems.add(f'non-members of {g} carry a position')
+            if any(r[idx] not in (layout.ip_not_member_index, NOT_MEMBER_INDEX, None) for r in ip.values()
+                   if not is_member_flag(r[flag])):
+                problems.add(f'IP non-members of {g} carry a position')
+            for (channel_id, _), row in ip.items():    # E6: IP member <=> favorite_idx row with the same index
+                member, mirror = is_member_flag(row[flag]), fav_rows.get(channel_id)
+                mirrored = mirror is not None and is_member_flag(mirror[flag])
+                if member != mirrored or (member and int(mirror[idx]) != int(row[idx])):
+                    problems.add(f'favorite_idx out of sync with ip for {channel_id} in {g}')
         registry = {(r.channel_id, r.mso) for r in self.identity.records.values()}
-        if registry != set(on):
-            problems.add('identity registry does not match tuner_on')
+        if registry != set(on) | set(ip):
+            problems.add('identity registry does not match tuner_on and ip')
         return problems

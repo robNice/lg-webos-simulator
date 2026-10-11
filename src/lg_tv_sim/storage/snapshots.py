@@ -89,8 +89,10 @@ class RunManager:
             if problems:
                 raise RuntimeError('fixture schema incompatible: ' + '; '.join(problems))
             base_hash = database.content_hash(conn)
-            keys = [(r[0], r[1]) for r in conn.execute(
-                'SELECT dvc_chan_id, mso_prdt_itm_code FROM tuner_on ORDER BY dvc_chan_id, mso_prdt_itm_code')]
+            tables = ['tuner_on'] + [r[0] for r in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='ip'")]   # LG Channels get sim IDs too
+            keys = sorted((r[0], r[1]) for table in tables for r in conn.execute(
+                f'SELECT dvc_chan_id, mso_prdt_itm_code FROM {table}'))
         finally:
             conn.close()
         IdentityRegistry.build(base_hash, keys, fixture.tags).save(run.identity_path)

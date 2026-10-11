@@ -13,7 +13,8 @@ Profil `lg_webos22_historical`: Regeln werden von oben nach unten geprüft, die 
 
 Weitere Verhaltensweisen:
 
-- Programmnummern gelten **pro Empfangsmodus** (`chan_mode_name`). Kabel 13 und Satellit 13 stören sich nicht.
+- Programmnummern gelten **pro Empfangsmodus** (`chan_mode_name`). Kabel 13 und Satellit 13 stören sich nicht;
+  ein Satellitensender auf eine nur von Kabel belegte Nummer ist ein MOVE (E2E-Test mit Editor v0.6.4).
 - Mehrfachbelegung bestehender Nummern ist erlaubt, z. B. 101 (TV + Radio).
 - Gleiche DVB-Kennung, mehrere Einträge: WELT HD 13/403/1015.
 - Nach dem Umnummerieren ist die alte ID ungültig (`CHANNEL_ERROR_NOT_FOUND`); es gibt keinen versteckten Alias.
@@ -23,6 +24,24 @@ Weitere Verhaltensweisen:
 - `getFavoriteGroupList` liefert auch nach `setGroupName` die Standardnamen (am TV beobachtet).
 - Unbekannte Methoden, Services, Parameter und ID-Formate führen zu `returnValue:false` mit eindeutigem Code.
   Erfolg wird nie vorgetäuscht.
+
+## Empfangsarten und LG Channels (Editor v0.6.4, echter TV OLED55C27LA, 11.10.2026)
+
+Am TV nur lesend ermittelt, außer E8. Die Nummern verweisen auf `docs/evidence-register.md`.
+
+| # | Beobachtung | Abbildung im Simulator |
+|---|---|---|
+| E2 | `getChannelList` mit `channelMode: ["Tuner","IP"]` liefert 1072 Einträge (682 Satellit, 170 Kabel, 220 IP); `"Tuner"` allein 852; `"Satellite"`, `"Cable"`, `"IP"` einzeln 682/170/220, jeweils mit `Invisible:false` (27 der 709 Satellitenzeilen sind unsichtbar) | String oder Liste; `Tuner` = Satellit + Kabel + Antenne; auf `real_20261011_1417` genau diese Zahlen (Test) |
+| E3 | `satelliteName`: Satellit `"ASTRA 19.2E"`, Kabel `" "`, IP `"UNKNOWN"`; `channelModeId` Kabel 1, Satellit 2, IP 7 | `satelliteName` aus `sat_name`, sonst diese Werte; Antenne wie Kabel (Annahme) |
+| E4 | IP-ID `11_3_<nummer>_65535_0_0_0` | so in Fixtures erzeugt |
+| E5 | Tuner-Nicht-Mitglied `favoriteIdx = 250`, Tuner-Mitglieder ab 0 (mit Lücken), IP-Mitglieder ab 251 | Tuner 0.., IP ab 251; Nicht-Mitglied IP 255 (so in der Aufnahme von 14:17) |
+| E6 | IP-Mitglieder in `ip` und `favorite_idx` (gleiche ID, gleicher Index), nie in `tuner_on`/`tuner_off` | genau so geschrieben, Invariante prüft es |
+| E7 | Live-Antwort meldet für IP-Mitglieder dieselben `favoriteIdx`/`favoriteGroup` wie die Datenbank | `getChannelList` liest IP-Einträge aus `ip` |
+| E8 | Umsortieren von 5 LG Channels in Liste D per Editor funktionierte; danach weiter 251–255 in neuer Reihenfolge | Verschieben im IP-Block vergibt 251… neu |
+| E9 | LG Channels lassen sich nicht umnummerieren (Nutzerbeobachtung) | `changeChannelNumber` mit IP-ID: `SIM_UNSUPPORTED_IP_CHANNEL` |
+
+Offen (Simulator-Annahmen, siehe `docs/compatibility-gaps.md`): U1 Blockgrenze Tuner/IP, U2 Index beim Aufnehmen
+per API, U3 Verdichten beim Entfernen, U4 Fehlercode für IP-Umnummerierung, U5 ID-Umschreibung bei Kabel/Antenne.
 
 ## Fehlerszenarien (`fixtures/scenarios/*.yaml`)
 

@@ -14,7 +14,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
-from lg_tv_sim.domain.models import ChannelEntry, EvidenceLevel, NumberEffect
+from lg_tv_sim.domain.models import IP_FIRST_INDEX, IP_NOT_MEMBER_INDEX, ChannelEntry, EvidenceLevel, NumberEffect
 
 Occupancy = Literal['none', 'one', 'same_dvb', 'other_dvb', 'many', 'occupied', 'any']
 PROFILES_DIR = Path(__file__).resolve().parent.parent / 'profiles'
@@ -45,12 +45,26 @@ class NumberRule(Strict):
     note: str = ''
 
 
+class FavoriteLayout(Strict):
+    """favoriteIdx model for lists with tuner and LG Channels (IP) members.
+
+    Tuner members 0.., IP members from ``ip_first_index`` (E5, E8 confirmed for a pure IP block). Whether IP
+    members can move before tuner members is UNKNOWN (U1): with ``ip_block_after_tuner`` the IP block stays
+    behind the tuner members and a crossing move changes nothing but still answers returnValue true;
+    ``false`` keeps one joint order 0..n-1 (SIMULATOR_ASSUMPTION either way).
+    """
+    ip_block_after_tuner: bool = True
+    ip_first_index: int = IP_FIRST_INDEX
+    ip_not_member_index: int = IP_NOT_MEMBER_INDEX
+
+
 class Profile(Strict):
     id: str
     description: str = ''
     number_min: int = 1
     number_max: int = 9999
     read_after_write_stale_reads: int = 0
+    favorites: FavoriteLayout = FavoriteLayout()
     number_rules: list[NumberRule]
 
     @classmethod

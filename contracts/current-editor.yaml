@@ -2,7 +2,7 @@
 # Source: ~/PhpstormProjects/lg-webos-channel-editor, APP_VERSION 0.6.1 (HEAD da6eb10 "v0.6.0" plus
 # uncommitted v0.6.1 work, read-only analysis on 2026-10-11). Re-verify after every editor release.
 editor:
-  version: 0.6.1
+  version: 0.6.4
   last_hardware_confirmed: 0.5.24
   ssh_library: paramiko (system python3, 2.12.0 at analysis time)
   host_key_policy: load_system_host_keys() + RejectPolicy   # needs [127.0.0.1]:2222 in ~/.ssh/known_hosts
@@ -50,21 +50,27 @@ operations:
 
 luna:
   - {service: com.webos.service.iepg, method: getChannelList,
-     params: {dataType: 0, sort: 0, channelMode: Satellite, channelGroup: [All], acceptEmptyGroupName: false,
+     params: {dataType: 0, sort: 0, channelMode: [Tuner, IP], channelGroup: [All], acceptEmptyGroupName: false,
               attribute: [{filterType: Invisible, value: false}]},
      reads: [channelList, returnValue],
-     row_fields_read: [channelId, channelNumber, channelName, satelliteName, favoriteGroup, favoriteIdxA..H],
+     row_fields_read: [channelId, channelNumber, channelName, satelliteName, channelMode, favoriteGroup,
+                       favoriteIdxA..H],
+     note: "v0.6.4: channelMode list like LG's own channeledit app (E1); a row without channelMode counts as Satellite",
      evidence: CURRENT_CLIENT_CONFIRMED}
   - {service: com.webos.service.iepg, method: changeChannelNumber,
      params: {channelId: str, channelNumber: int}, reads: [returnValue, errorCode, errorText],
-     note: "since v0.6.0 via iepg (formerly legacybroadcast.channel)", evidence: CURRENT_CLIENT_CONFIRMED}
+     note: "since v0.6.0 via iepg; v0.6.4 for satellite, cable and antenna, never for IP (plan refuses: error.plan.ip_number_locked)",
+     evidence: CURRENT_CLIENT_CONFIRMED}
   - {service: com.webos.service.iepg, method: setChannelFavoriteGroup,
-     params: {channelId: [str], favoriteGroup: [A-H]}, reads: [returnValue], evidence: CURRENT_CLIENT_CONFIRMED}
+     params: {channelId: [str], favoriteGroup: [A-H]}, reads: [returnValue],
+     note: "v0.6.4: every reception mode, also IP IDs", evidence: CURRENT_CLIENT_CONFIRMED}
   - {service: com.webos.service.iepg, method: releaseChannelFavoriteGroup,
-     params: {channelId: [str], favoriteGroup: [A-H]}, reads: [returnValue], evidence: CURRENT_CLIENT_CONFIRMED}
+     params: {channelId: [str], favoriteGroup: [A-H]}, reads: [returnValue],
+     note: "v0.6.4: every reception mode, also IP IDs", evidence: CURRENT_CLIENT_CONFIRMED}
   - {service: com.webos.service.iepg, method: moveChannelFavoritePriority,
      params: {favoriteGroupId: 0..7, channelId: [str], destinationChannelId: str, direction: up},
-     reads: [returnValue], evidence: CURRENT_CLIENT_CONFIRMED}
+     reads: [returnValue], note: "v0.6.4: also IP IDs; order verified by reading favoriteIdx back (error.order.unconfirmed)",
+     evidence: CURRENT_CLIENT_CONFIRMED}
   - {service: com.webos.service.iepg, method: setGroupName,
      params: {channelMode: TUNER, channelGroupId: 200..207, channelGroupName: str},
      reads: [returnValue, errorText, errorCode], verified_by: read_group_name, evidence: CURRENT_CLIENT_CONFIRMED}
@@ -74,6 +80,19 @@ not_used_by_current_editor:
   - com.webos.service.legacybroadcast.channel/getChannel            # simulated (read-only)
   - com.webos.service.legacybroadcast.channel/copyDvbSatelliteChannelForAstra  # deliberately UNSUPPORTED
   - getChannelList with compressed: 1                                # UNSUPPORTED (fails closed)
+
+tv_identity:   # editor v0.6.4 (tv_identity.TvIdentity), once per login, read-only
+  command: "luna-send -n 1 -f luna://com.webos.service.tv.systemproperty/getSystemInfo '{\"keys\":[\"modelName\",\"serialNumber\"]}'"
+  reads: [returnValue, modelName, serialNumber]
+  use: "backup folder per TV = <model>-<serial>; falls back to host+port if the call fails"
+  simulator: "model/serial from [device]; serial must start with SIM- so simulator backups never mix with a real TV"
+  evidence: CURRENT_CLIENT_CONFIRMED (request); response layout and -f formatting SIMULATOR_ASSUMPTION
+
+ip_channels:   # LG Channels, editor v0.6.4 (tv_write.CHANNEL_TABLES, channel_map, tv_inventory, tv_compare)
+  read: "SQLite table ip from the .backup (same columns as tuner_on, chan_mode_name IP, sat_name UNKNOWN) and getChannelList channelMode IP"
+  write: "favorites only (set/release/move); never changeChannelNumber"
+  simulator: "IP members in ip + favorite_idx, indices from 251 (E5/E6); number changes refused with SIM_UNSUPPORTED_IP_CHANNEL (U4)"
+  evidence: REAL_TV_READ E2-E7, REAL_TV_CONFIRMED E8 (reorder inside a pure IP block); U1-U3 SIMULATOR_ASSUMPTION
 
 database_contract:   # app.validate_database
   tuner_on: [dvc_chan_id, chan_std_name, chan_no_int, mso_prdt_itm_code, fav_chan_gr_a..h, favoriteIdxA..H]

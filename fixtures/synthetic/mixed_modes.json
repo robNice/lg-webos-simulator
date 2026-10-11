@@ -1,0 +1,220 @@
+{
+ "name": "mixed_modes",
+ "version": 1,
+ "seed": 0,
+ "description": "Every reception mode: 12 satellite, 3 cable (cable 1 next to satellite 1), 2 antenna, 5 LG Channels; A = 4 satellite + 2 IP (IP block from 251), D = 3 IP (251-253).",
+ "channels": [
+  {
+   "name": "Das Erste HD",
+   "number": 1,
+   "mode": "Satellite",
+   "phy": 12,
+   "tsid": 1002,
+   "sid": 10101,
+   "onid": 1,
+   "favorites": {
+    "A": 0
+   }
+  },
+  {
+   "name": "ZDF HD",
+   "number": 2,
+   "mode": "Satellite",
+   "phy": 13,
+   "tsid": 1003,
+   "sid": 10102,
+   "onid": 1,
+   "favorites": {
+    "A": 1
+   }
+  },
+  {
+   "name": "RTL HD",
+   "number": 3,
+   "mode": "Satellite",
+   "phy": 14,
+   "tsid": 1004,
+   "sid": 10103,
+   "onid": 1,
+   "favorites": {
+    "A": 2
+   }
+  },
+  {
+   "name": "SAT.1 HD",
+   "number": 4,
+   "mode": "Satellite",
+   "phy": 15,
+   "tsid": 1005,
+   "sid": 10104,
+   "onid": 1,
+   "favorites": {
+    "A": 3
+   }
+  },
+  {
+   "name": "ProSieben HD",
+   "number": 5,
+   "mode": "Satellite",
+   "phy": 16,
+   "tsid": 1006,
+   "sid": 10105,
+   "onid": 1
+  },
+  {
+   "name": "VOX HD",
+   "number": 6,
+   "mode": "Satellite",
+   "phy": 17,
+   "tsid": 1007,
+   "sid": 10106,
+   "onid": 1
+  },
+  {
+   "name": "kabel eins HD",
+   "number": 7,
+   "mode": "Satellite",
+   "phy": 18,
+   "tsid": 1008,
+   "sid": 10107,
+   "onid": 1
+  },
+  {
+   "name": "RTLZWEI HD",
+   "number": 8,
+   "mode": "Satellite",
+   "phy": 19,
+   "tsid": 1009,
+   "sid": 10108,
+   "onid": 1
+  },
+  {
+   "name": "arte HD",
+   "number": 9,
+   "mode": "Satellite",
+   "phy": 20,
+   "tsid": 1010,
+   "sid": 10109,
+   "onid": 1
+  },
+  {
+   "name": "3sat HD",
+   "number": 10,
+   "mode": "Satellite",
+   "phy": 21,
+   "tsid": 1011,
+   "sid": 10110,
+   "onid": 1
+  },
+  {
+   "name": "phoenix HD",
+   "number": 11,
+   "mode": "Satellite",
+   "phy": 22,
+   "tsid": 1012,
+   "sid": 10111,
+   "onid": 1
+  },
+  {
+   "name": "ZDFneo HD",
+   "number": 12,
+   "mode": "Satellite",
+   "phy": 23,
+   "tsid": 1013,
+   "sid": 10112,
+   "onid": 1
+  },
+  {
+   "name": "Stadtkanal Hafen",
+   "number": 1,
+   "mode": "Cable",
+   "phy": 1,
+   "tsid": 5,
+   "sid": 601,
+   "onid": 133,
+   "satellite": " "
+  },
+  {
+   "name": "Kabel Regional",
+   "number": 20,
+   "mode": "Cable",
+   "phy": 2,
+   "tsid": 5,
+   "sid": 602,
+   "onid": 133,
+   "satellite": " "
+  },
+  {
+   "name": "Kabel Klassik",
+   "number": 21,
+   "mode": "Cable",
+   "phy": 3,
+   "tsid": 5,
+   "sid": 603,
+   "onid": 133,
+   "satellite": " ",
+   "radio": true
+  },
+  {
+   "name": "Antenne Nordsee TV",
+   "mode": "Terrestrial",
+   "number": 1,
+   "phy": 21,
+   "tsid": 12289,
+   "sid": 700,
+   "onid": 8468,
+   "satellite": " "
+  },
+  {
+   "name": "Radio Talaue",
+   "mode": "Terrestrial",
+   "number": 2,
+   "phy": 21,
+   "tsid": 12289,
+   "sid": 701,
+   "onid": 8468,
+   "satellite": " ",
+   "radio": true
+  },
+  {
+   "name": "LG 1",
+   "number": 100,
+   "mode": "IP",
+   "favorites": {
+    "D": 0
+   }
+  },
+  {
+   "name": "LG 1: Film",
+   "number": 101,
+   "mode": "IP",
+   "favorites": {
+    "D": 1
+   }
+  },
+  {
+   "name": "Stream Kino",
+   "number": 205,
+   "mode": "IP",
+   "favorites": {
+    "A": 10
+   }
+  },
+  {
+   "name": "Stream Doku",
+   "number": 206,
+   "mode": "IP",
+   "favorites": {
+    "A": 11
+   }
+  },
+  {
+   "name": "Stream News",
+   "number": 210,
+   "mode": "IP",
+   "favorites": {
+    "D": 2
+   }
+  }
+ ]
+}

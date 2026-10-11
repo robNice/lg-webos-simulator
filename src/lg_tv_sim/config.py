@@ -4,6 +4,7 @@ from __future__ import annotations
 import ipaddress
 import logging
 import os
+import re
 import shutil
 import tomllib
 from dataclasses import dataclass, field, fields, replace
@@ -44,9 +45,10 @@ class AuthConfig:
 class StorageConfig:
     base_dir: str = '.simulator/runs'
     fixtures_dir: str = 'fixtures/synthetic'
+    recorded_fixtures_dir: str = 'fixtures/recorded'
     private_fixtures_dir: str = '.simulator/fixtures'
     scenarios_dir: str = 'fixtures/scenarios'
-    initial_fixture: str = 'synthetic_favorites_47'
+    initial_fixture: str = 'real_20261011_2301'
 
 
 @dataclass(frozen=True)
@@ -58,6 +60,13 @@ class BehaviorConfig:
     unknown_luna_methods: str = 'deny'
     seed: int = 1001
     scenario: str | None = None
+
+
+@dataclass(frozen=True)
+class DeviceConfig:
+    """Identity reported by getSystemInfo (editor v0.6.4 files backups per model + serial)."""
+    model_name: str = 'OLED55C27LA'
+    serial_number: str = 'SIM-000000000001'   # must start with "SIM-": never the real TV's serial
 
 
 @dataclass(frozen=True)
@@ -74,9 +83,10 @@ class SimulatorConfig:
     storage: StorageConfig = field(default_factory=StorageConfig)
     behavior: BehaviorConfig = field(default_factory=BehaviorConfig)
     security: SecurityConfig = field(default_factory=SecurityConfig)
+    device: DeviceConfig = field(default_factory=DeviceConfig)
 
     _SECTIONS = {'server': ServerConfig, 'authentication': AuthConfig, 'storage': StorageConfig,
-                 'behavior': BehaviorConfig, 'security': SecurityConfig}
+                 'behavior': BehaviorConfig, 'security': SecurityConfig, 'device': DeviceConfig}
 
     @classmethod
     def load(cls, path: str | Path | None = None, root: Path | None = None) -> SimulatorConfig:
@@ -123,6 +133,11 @@ class SimulatorConfig:
                                   'set [security] allow_external_bind = true to permit it deliberately')
         if self.behavior.unknown_commands != 'deny' or self.behavior.unknown_luna_methods != 'deny':
             raise ConfigError('unknown commands and Luna methods can only be denied (fail closed)')
+        if not re.fullmatch(r'SIM-[A-Za-z0-9._-]{1,60}', self.device.serial_number):
+            raise ConfigError('device serial_number must look like "SIM-…" (letters, digits, . _ -), so the editor '
+                              'never mixes simulator backups with a real TV')
+        if not re.fullmatch(r'[A-Za-z0-9._-]{1,64}', self.device.model_name):
+            raise ConfigError('device model_name must be 1-64 letters, digits, . _ -')
         if self.security.allow_sftp_write:
             raise ConfigError('SFTP write support is not implemented; the current editor needs none')
         if self.behavior.read_after_write_stale_reads < 0 or self.behavior.virtual_ms_per_call < 0:

@@ -4,16 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LG TV Simulator</title>
-<link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png">
-<link rel="icon" sizes="48x48" href="/favicon.ico">
-<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png?v={{version}}">
+<link rel="icon" sizes="48x48" href="/favicon.ico?v={{version}}">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png?v={{version}}">
 <meta name="theme-color" content="#020d21">
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css?v={{version}}">
 </head>
 <body>
-<div class="banner" role="alert">SIMULATOR – kein echter LG-TV</div>
 <header>
-  <div class="brand"><img src="/static/logo.png" alt="" width="40" height="40"><h1>LG webOS TV Simulator</h1></div>
+  <div class="brand"><img src="/static/logo.png?v={{version}}" alt="" width="40" height="40"><h1>LG webOS TV Simulator</h1></div>
   <div id="conn" class="muted"></div>
 </header>
 <main>
@@ -70,6 +69,6 @@
     </div>
   </section>
 </main>
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v={{version}}"></script>
 </body>
 </html>

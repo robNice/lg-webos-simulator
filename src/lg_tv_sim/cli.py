@@ -31,9 +31,11 @@ def build_parser() -> argparse.ArgumentParser:
         p = sub.add_parser(name, help=f'{name.split("-")[0]} an SQLite channel database or a fixture name')
         p.add_argument('target')
 
-    imp = sub.add_parser('import-fixture', help='import a private channel.sql backup (read-only, never committed)')
+    imp = sub.add_parser('import-fixture', help='import a channel.sql backup (read-only; private unless --public)')
     imp.add_argument('file')
     imp.add_argument('--name', required=True)
+    imp.add_argument('--public', action='store_true',
+                     help='sanitise (blank ip contacts/stream URLs, refuse e-mail/URL/key data) into fixtures/recorded')
 
     reset = sub.add_parser('reset', help='reset a running simulator via its admin API')
     reset.add_argument('--fixture')
@@ -55,7 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     hosts.add_argument('--port', type=int, help='port the client uses (default: SSH port, e.g. a different Docker mapping)')
     hosts.add_argument('--install', metavar='FILE', help='append the line to FILE (e.g. ~/.ssh/known_hosts)')
 
-    sub.add_parser('build-synthetic', help='regenerate the synthetic fixture JSON specs')
+    sub.add_parser('build-synthetic', help='regenerate the synthetic fixture specs and derived recorded fixtures')
     return parser
 
 
@@ -134,7 +136,8 @@ def _inspect_target(config: SimulatorConfig, target: str) -> dict:
     path = Path(target)
     if path.is_file():
         return inspect_sqlite(path)
-    catalog = FixtureCatalog(config.path(config.storage.fixtures_dir), config.path(config.storage.private_fixtures_dir))
+    catalog = FixtureCatalog(config.path(config.storage.fixtures_dir), config.path(config.storage.private_fixtures_dir),
+                             config.path(config.storage.recorded_fixtures_dir))
     fixture = catalog.get(target)
     scratch = config.path('.simulator/tmp') / f'inspect-{fixture.name}.sqlite'
     scratch.parent.mkdir(parents=True, exist_ok=True)
@@ -149,8 +152,9 @@ def _inspect_target(config: SimulatorConfig, target: str) -> dict:
 
 def cmd_import(config: SimulatorConfig, args) -> int:
     from lg_tv_sim.storage.fixtures import FixtureCatalog
-    catalog = FixtureCatalog(config.path(config.storage.fixtures_dir), config.path(config.storage.private_fixtures_dir))
-    meta = catalog.import_sqlite(Path(args.file), args.name)
+    catalog = FixtureCatalog(config.path(config.storage.fixtures_dir), config.path(config.storage.private_fixtures_dir),
+                             config.path(config.storage.recorded_fixtures_dir))
+    meta = catalog.import_sqlite(Path(args.file), args.name, public=args.public)
     print(json.dumps(meta, indent=2))
     return 0
 
@@ -218,9 +222,13 @@ def cmd_known_hosts(config: SimulatorConfig, args) -> int:
 
 
 def cmd_build_synthetic(config: SimulatorConfig, args) -> int:
+    from lg_tv_sim.storage.fixtures import write_ip_favorites
     from lg_tv_sim.storage.synthetic import write_all
     for path in write_all(config.path(config.storage.fixtures_dir)):
         print(f'wrote {path}')
+    derived = write_ip_favorites(config.path(config.storage.recorded_fixtures_dir))
+    if derived:
+        print(f'wrote {derived}')
     return 0
 
 

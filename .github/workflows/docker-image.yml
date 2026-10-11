@@ -1,6 +1,6 @@
 name: Build and publish Docker image
 
-# Release: push a tag vX.Y.Z on main (must equal __version__ in src/lg_tv_sim/__init__.py).
+# Release: push a tag vX.Y.Z on main (must equal __version__ in src/lg_tv_sim/version.py).
 on:
   push:
     tags:
@@ -40,7 +40,7 @@ jobs:
         id: version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
-          APP_VERSION=$(python -c "from lg_tv_sim import __version__; print(__version__)")
+          APP_VERSION=$(python -c "from lg_tv_sim.version import __version__; print(__version__)")
 
           if [ "$TAG_VERSION" != "$APP_VERSION" ]; then
             echo "❌ Version mismatch"

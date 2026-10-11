@@ -1,7 +1,9 @@
 # Evidence-Register
 
 Stufen: `HARDWARE_CONFIRMED`, `TRACE_CONFIRMED`, `HISTORICAL_REPORTED`, `CURRENT_CLIENT_CONFIRMED`,
-`SIMULATOR_ASSUMPTION`, `UNSUPPORTED`. Die Profilregeln in
+`SIMULATOR_ASSUMPTION`, `UNSUPPORTED`; seit Editor v0.6.4 zusätzlich `REAL_TV_CLIENT_CODE` (LGs eigene App, lesend
+vom TV kopiert), `REAL_TV_READ` (am TV nur lesend ermittelt), `REAL_TV_CONFIRMED` (am TV geschrieben und bestätigt),
+`USER_OBSERVED` (Nutzerbeobachtung). Die Profilregeln in
 `src/lg_tv_sim/profiles/lg_webos22_historical.yaml` tragen ihre Stufe selbst.
 
 ```yaml
@@ -55,6 +57,90 @@ Stufen: `HARDWARE_CONFIRMED`, `TRACE_CONFIRMED`, `HISTORICAL_REPORTED`, `CURRENT
 - id: lg-id-format-satellite
   claim: "Satelliten-ID = <src>_<phy>_<maj>_<min>_<tsid>_<sid>_<onid>, maj=min=Programmnummer, tail=signal_chan_id"
   evidence_level: HARDWARE_CONFIRMED (Struktur in realen Backups); Transformation beim Umnummerieren: SIMULATOR_ASSUMPTION
+
+- id: lg-id-format-observed-variants
+  claim: "In einem echten Backup nach bestätigtem Umnummerieren: Satellit LCN maj=min=Nummer (461); Satellit ohne LCN maj=Nummer, min≠Nummer (142, z. B. 7_17_33_14_…; min 0 oder andere Werte); Radio maj=Nummer+0x4000 (Satellit und Kabel); Kabel 3_<phy>_<maj>_<min>_…; chan_type_id Kabel 4/5, Satellit 6/7 (TV/Radio) = Präfix von channelMajMinNo"
+  evidence_level: HARDWARE_CONFIRMED (Struktur eines Backups vom 11.10.2026, nur aggregiert ausgewertet, keine Senderdaten übernommen)
+  consequence: "Fixture-Builder bildet die Layouts nach; die ID-Transformation beim Umnummerieren ist nur für maj=min=Nummer simuliert, alles andere schlägt geschlossen fehl"
+
+- id: lg-terrestrial-codes
+  claim: "Antenne: chan_mode_name Terrestrial, chan_src_type 2, chan_mode_id 0, chan_type_id 2/3, ID <src>_<phy>_<maj>_0_<tsid>_<sid>_<onid>"
+  evidence_level: SIMULATOR_ASSUMPTION (kein Antennen-Backup vorhanden; Sender in synthetic_realistic erfunden)
+
+- id: E1-channeledit-channelmode
+  claim: "LGs App com.webos.app.channeledit (main.js) fragt Favoritenlisten mit channelMode [Tuner, IP] ab, mit compressed: 1 (sendet der Editor nicht)"
+  evidence_level: REAL_TV_CLIENT_CODE
+
+- id: E2-getchannellist-modes
+  claim: "[Tuner, IP] = 1072 (682 Satellit, 170 Kabel, 220 IP); Tuner = 852; Satellite/Cable/IP einzeln 682/170/220; jeweils Invisible:false; tuner_on hat 709 Satellitenzeilen (27 unsichtbar)"
+  evidence_level: REAL_TV_READ
+  consequence: "channelMode als String oder Liste; ein Test auf real_20261011_1417 reproduziert die Zahlen. Dass Tuner auch Antenne umfasst: SIMULATOR_ASSUMPTION (kein Antennen-TV vorhanden)"
+
+- id: E3-satellitename-modeid
+  claim: "satelliteName Satellit 'ASTRA 19.2E', Kabel ' ' (ein Leerzeichen), IP 'UNKNOWN'; channelModeId Kabel 1, Satellit 2, IP 7"
+  evidence_level: REAL_TV_READ
+
+- id: E4-ip-id-format
+  claim: "IP-ID 11_3_<nummer>_65535_0_0_0 (z. B. 11_3_100_65535_0_0_0 = LG 1, Nummer 100)"
+  evidence_level: REAL_TV_READ
+
+- id: E5-favorite-index-blocks
+  claim: "Nicht-Mitglied favoriteIdx 250; Tuner-Mitglieder ab 0 (Liste A 0–59 mit Lücken); IP-Mitglieder ab 251 (per Fernbedienung hinzugefügte LG Channels in Liste D: 251–255)"
+  evidence_level: REAL_TV_READ
+  note: "Präzisiert durch die Aufnahmen 14:17 und 23:01: In ip tragen IP-Nicht-Mitglieder 255, in favorite_idx stehen Nicht-Mitglieds-Spalten auf 250, Tuner-Nicht-Mitglieder 250. Tuner-Listen behalten Lücken (A 0, 1, 7, 8 …; C beginnt bei 8). Der Simulator verdichtet nach Änderungen weiterhin (SIMULATOR_ASSUMPTION, ob der TV nach einem Entfernen verdichtet, ist ungemessen)."
+
+- id: E11-diff-1417-2301
+  claim: "Zwischen den Aufnahmen 14:17 und 23:01 änderten sich nur 5 ip-Zeilen (Liste D: 251 LG 1: Spotlight, 252 LG 1: Film, 253 Sony One | Action HITS, 254 Sony One | Comedy HITS, 255 LG 1; user_fav_chan_gr [\"D\"]), 5 neue favorite_idx-Zeilen (gleiche Indizes, übrige Listen 250) und der Name von Liste B; tuner_on und tuner_off unverändert"
+  evidence_level: REAL_TV_READ (beide Aufnahmen bereinigt in fixtures/recorded)
+  consequence: "Regressionstest: Von real_20261011_1417 aus die 5 Sender per Luna in D aufnehmen und wie der Editor sortieren ergibt Zeile für Zeile den Stand von real_20261011_2301 (beide Aufnahme-Reihenfolgen)"
+
+- id: E6-ip-favorites-storage
+  claim: "IP-Mitglieder stehen in ip (fav_chan_gr_<x>='1', favoriteIdx<X>, user_fav_chan_gr) und in favorite_idx (gleiche ID, gleicher Index), nicht in tuner_on/tuner_off"
+  evidence_level: REAL_TV_READ
+  consequence: "Engine schreibt genau so; Invariante prüft ip ⇔ favorite_idx; Fixture real_20261011_1417_ipfav angeglichen"
+
+- id: E7-live-ip-favorites
+  claim: "getChannelList meldet für IP-Mitglieder dieselben favoriteIdx (251…) und favoriteGroup wie die Datenbank"
+  evidence_level: REAL_TV_READ
+
+- id: E8-reorder-ip-block
+  claim: "Umsortieren von 5 LG Channels in Liste D per Editor (moveChannelFavoritePriority, direction up) funktioniert; danach 251–255 in neuer Reihenfolge, gleich in ip, favorite_idx und Live-Antwort"
+  evidence_level: REAL_TV_CONFIRMED (Reihenfolge innerhalb eines reinen IP-Blocks)
+
+- id: E9-ip-not-renumberable
+  claim: "LG Channels lassen sich am TV nicht umnummerieren"
+  evidence_level: USER_OBSERVED
+  consequence: "changeChannelNumber mit IP-ID: SIM_UNSUPPORTED_IP_CHANNEL (Fehlercode des TV unbekannt, U4)"
+
+- id: E10-live-extra-fields
+  claim: "Die Live-Antwort enthält viel mehr Felder (u. a. channelModeId, channelTypeId, rfIpChannel, ipChanType, majorNumber, minorNumber); der Editor liest nur channelId, channelNumber, channelName, satelliteName, channelMode, favoriteGroup, favoriteIdxA..H"
+  evidence_level: REAL_TV_READ
+  consequence: "Der Simulator liefert die gelesenen Felder und einige mehr, nicht alle Felder des TV"
+
+- id: U1-ip-block-boundary
+  claim: "Darf ein IP-Sender per moveChannelFavoritePriority vor einen Tuner-Sender rücken?"
+  evidence_level: SIMULATOR_ASSUMPTION (Profil favorites.ip_block_after_tuner; Standard true: ein Move über die Grenze bleibt ohne Wirkung, Antwort returnValue true; false: gemeinsame Reihenfolge 0..n-1)
+
+- id: U2-ip-add-index
+  claim: "Index bei setChannelFavoriteGroup für einen IP-Sender per API"
+  evidence_level: SIMULATOR_ASSUMPTION (nächster freier Index im IP-Block, mindestens 251)
+
+- id: U3-ip-release-compaction
+  claim: "Werden die übrigen IP-Indizes nach releaseChannelFavoriteGroup zusammengeschoben?"
+  evidence_level: SIMULATOR_ASSUMPTION (ja, innerhalb des IP-Blocks)
+
+- id: U4-ip-renumber-error
+  claim: "Antwort des TV auf changeChannelNumber mit IP-ID"
+  evidence_level: SIMULATOR_ASSUMPTION (Simulator-Code SIM_UNSUPPORTED_IP_CHANNEL; der Editor sendet das nie)
+
+- id: U5-cable-antenna-id-rewrite
+  claim: "ID-Umschreibung beim Umnummerieren von Kabel- und Antennensendern"
+  evidence_level: UNSUPPORTED (bewusst keine Annahme: Umnummerieren schlägt mit SIM_UNSUPPORTED_CHANNEL_ID fehl)
+
+- id: systemproperty-getsysteminfo
+  claim: "getSystemInfo {keys:[modelName, serialNumber]} liefert die Schlüssel auf oberster Ebene plus returnValue; luna-send -f gibt formatiertes JSON aus"
+  evidence_level: CURRENT_CLIENT_CONFIRMED (Aufruf und gelesene Felder, tv_identity.py v0.6.4); Antwortlayout/Formatierung SIMULATOR_ASSUMPTION
+  consequence: "Simulator meldet Modell aus [device] und immer eine SIM-Seriennummer"
 
 - id: luna-response-shapes
   claim: "Antwortlayout der Luna-Methoden"

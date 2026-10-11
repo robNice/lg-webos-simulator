@@ -3,4 +3,6 @@
 SIMULATOR – not a real LG TV.  See docs/ for the evidence behind each behaviour.
 """
 
-__version__ = '0.1.0'
+from lg_tv_sim.version import __version__
+
+__all__ = ['__version__']

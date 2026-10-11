@@ -7,9 +7,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from lg_tv_sim import __version__
 from lg_tv_sim.storage.fixtures import FixtureError
 
 if TYPE_CHECKING:
@@ -57,7 +58,7 @@ def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
             return PlainTextResponse('forbidden host', status_code=403)
         response = await call_next(request)
         response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['Cache-Control'] = 'no-store'
+        response.headers.setdefault('Cache-Control', 'no-store')
         response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self'; script-src 'self'"
         return response
 
@@ -80,15 +81,19 @@ def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
 
     api = [Depends(authorized)]
 
+    page = (STATIC / 'index.html').read_text(encoding='utf-8').replace('{{version}}', __version__)
+
     @app.get('/', include_in_schema=False)
     def index():
-        return FileResponse(STATIC / 'index.html')
+        return HTMLResponse(page)
 
     @app.get('/static/{name}', include_in_schema=False)
-    def static(name: str):
+    def static(name: str, v: str | None = None):
         if name not in STATIC_FILES:
             raise HTTPException(404)
-        return FileResponse(STATIC / name)
+        # ?v=<version> (cache busting): this exact version never changes, so browsers may keep it.
+        headers = {'Cache-Control': 'public, max-age=31536000, immutable'} if v == __version__ else None
+        return FileResponse(STATIC / name, headers=headers)
 
     @app.get('/favicon.ico', include_in_schema=False)
     def favicon():
@@ -100,7 +105,7 @@ def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
 
     @app.get('/api/channels', dependencies=api)
     def channels():
-        return sim.channels()
+        return sim.channels(include_ip=True)
 
     @app.get('/api/journal', dependencies=api)
     def journal(since: int = 0, limit: int = 500):

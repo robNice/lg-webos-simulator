@@ -6,6 +6,7 @@ Supported commands (CURRENT_CLIENT_CONFIRMED, editor v0.6.1):
 * ``sqlite3 -readonly /mnt/lg/cmn_data/iepg/db/channel.sql '.backup /tmp/<name>'``  (app.py)
 * ``sqlite3 -readonly /mnt/lg/cmn_data/iepg/db/channel.sql "SELECT ..."``  (tv_groups.py)
 * ``luna-send -n 1 luna://<service>/<method> '<json>'``  (tv_write.py)
+* ``luna-send -n 1 -f luna://com.webos.service.tv.systemproperty/getSystemInfo '<json>'``  (tv_identity.py, v0.6.4)
 * ``rm -f /tmp/<name>``  (app.py)
 """
 from __future__ import annotations
@@ -102,8 +103,10 @@ class CommandRouter:
             if command == LOGIN_CHECK:
                 return self._simple('login_check', command, connection, CommandResult())
             words = split_command(command)
-            if words[:2] == ['luna-send', '-n'] and len(words) == 5 and words[2] == '1':
+            if words[:3] == ['luna-send', '-n', '1'] and len(words) == 5:
                 return self._luna(words[3], words[4], connection)
+            if words[:4] == ['luna-send', '-n', '1', '-f'] and len(words) == 6:     # -f: formatted (tv_identity.py)
+                return self._luna(words[4], words[5], connection, formatted=True)
             if len(words) == 4 and words[:2] == ['sqlite3', '-readonly']:
                 if not self.vfs.is_database(words[2]):
                     raise CommandRejected(f'unknown database {words[2]!r}')
@@ -182,7 +185,7 @@ class CommandRouter:
                             exit_status=result.exit_status, fault=fault, effect='REMOVE_TEMP')
         return result
 
-    def _luna(self, uri: str, payload: str, connection: str) -> CommandResult:
+    def _luna(self, uri: str, payload: str, connection: str, formatted: bool = False) -> CommandResult:
         match = LUNA_URI.fullmatch(uri)
         if not match:
             raise CommandRejected(f'invalid luna URI {uri!r}')
@@ -196,6 +199,9 @@ class CommandRouter:
         mutated = outcome.mutated
         if outcome.disconnect:
             return CommandResult(disconnect=True, hang_ms=outcome.hang_ms, mutated=mutated)
-        text = json.dumps(outcome.response, separators=(',', ':'), ensure_ascii=False) + '\n'
+        if formatted:   # layout of luna-send -f output is a SIMULATOR_ASSUMPTION (indented JSON)
+            text = json.dumps(outcome.response, indent=4, ensure_ascii=False) + '\n'
+        else:
+            text = json.dumps(outcome.response, separators=(',', ':'), ensure_ascii=False) + '\n'
         return CommandResult(stdout=text.encode(), stderr=outcome.stderr.encode(), exit_status=outcome.exit_status,
                              hang_ms=outcome.hang_ms, mutated=mutated)

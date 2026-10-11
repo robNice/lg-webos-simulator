@@ -1,0 +1,13 @@
+{
+  "name": "real_20261011_1417",
+  "source_sha256": "9b81d13fffcb12d092c2ba843c52d592b352ad4dac4bae5d279aa17ca3cb9e72",
+  "imported": "2026-10-11T17:30:41+00:00",
+  "tags": {},
+  "source": "lg-tv-channel-20261011-1417.sqlite",
+  "blanked_columns": [
+    "ip.call_num",
+    "ip.ip_chan_service_url"
+  ],
+  "description": "recorded real TV backup (sanitised: ip.call_num, ip.ip_chan_service_url blanked)",
+  "content_hash": "aeea550385e4f4c6f4f03ad85ba63910b4d6f2ec97a85310d7bf1a75235ee684"
+}

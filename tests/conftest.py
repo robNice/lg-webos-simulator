@@ -27,11 +27,14 @@ def free_port() -> int:
         return s.getsockname()[1]
 
 
-def make_config(root: Path, fixture: str = 'mini', **behavior) -> SimulatorConfig:
+def make_config(root: Path, fixture: str = 'mini', device: dict | None = None, **behavior) -> SimulatorConfig:
     config = SimulatorConfig(root=root)
     return config.with_overrides(
+        **({'device': device} if device else {}),
         server={'ssh_port': 0, 'admin_port': free_port()},
-        storage={'fixtures_dir': str(REPO / 'fixtures' / 'synthetic'), 'scenarios_dir': str(REPO / 'fixtures' / 'scenarios'),
+        storage={'fixtures_dir': str(REPO / 'fixtures' / 'synthetic'),
+                 'recorded_fixtures_dir': str(REPO / 'fixtures' / 'recorded'),
+                 'scenarios_dir': str(REPO / 'fixtures' / 'scenarios'),
                  'initial_fixture': fixture},
         **({'behavior': behavior} if behavior else {}))
 
@@ -40,10 +43,11 @@ def make_config(root: Path, fixture: str = 'mini', **behavior) -> SimulatorConfi
 def sim_factory(tmp_path):
     created = []
 
-    def factory(fixture: str = 'mini', scenario: str | None = None, **behavior) -> Simulator:
+    def factory(fixture: str = 'mini', scenario: str | None = None, device: dict | None = None,
+                **behavior) -> Simulator:
         if scenario:
             behavior['scenario'] = scenario
-        sim = Simulator(make_config(tmp_path, fixture, **behavior), password=PASSWORD)
+        sim = Simulator(make_config(tmp_path, fixture, device, **behavior), password=PASSWORD)
         created.append(sim)
         return sim
 
@@ -80,8 +84,9 @@ def running(sim_factory, tmp_path):
     """Start serve() of a fresh simulator in a background event loop."""
     instances = []
 
-    def start(fixture: str = 'mini', scenario: str | None = None, **behavior) -> RunningSimulator:
-        sim = sim_factory(fixture, scenario, **behavior)
+    def start(fixture: str = 'mini', scenario: str | None = None, device: dict | None = None,
+              **behavior) -> RunningSimulator:
+        sim = sim_factory(fixture, scenario, device, **behavior)
         ready = threading.Event()
 
         def run():

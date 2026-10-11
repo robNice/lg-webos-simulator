@@ -19,7 +19,7 @@ def test_status_and_banner(admin):
     assert status['simulator'].startswith('SIMULATOR') and status['fixture'] == 'mini'
     assert status['favorites']['A'] == 8
     page = client.get('/').text
-    assert 'SIMULATOR – kein echter LG-TV' in page
+    assert 'kein echter LG-TV' not in page and 'class="banner"' not in page   # red banner removed on request
     assert client.get('/static/app.js').status_code == 200
     assert client.get('/static/../api.py').status_code == 404
 
@@ -86,3 +86,41 @@ def test_logo_and_icons_are_served(admin):
         assert response.content.startswith(b'\x89PNG') and len(response.content) < 100_000
     favicon = client.get('/favicon.ico')
     assert favicon.status_code == 200 and favicon.content[:4] == b'\x00\x00\x01\x00'
+
+
+def test_assets_are_cache_busted_with_the_version(admin):
+    from lg_tv_sim import __version__
+    client, _ = admin
+    page = client.get('/')
+    assert '{{' not in page.text and page.headers['cache-control'] == 'no-store'
+    for name in ('app.js', 'style.css', 'logo.png', 'favicon-96x96.png', 'apple-touch-icon.png'):
+        assert f'/static/{name}?v={__version__}' in page.text
+    assert f'/favicon.ico?v={__version__}' in page.text
+    current = client.get(f'/static/app.js?v={__version__}')
+    assert 'immutable' in current.headers['cache-control']
+    assert client.get('/static/app.js?v=0.0.0-old').headers['cache-control'] == 'no-store'
+    assert client.get('/static/app.js').headers['cache-control'] == 'no-store'
+
+
+def test_admin_lists_lg_channels_read_only(sim_factory):
+    sim = sim_factory('real_20261011_1417_ipfav')
+    client = TestClient(create_app(sim))
+    channels = client.get('/api/channels').json()
+    ip = [c for c in channels if c['mode'] == 'IP']
+    assert len(ip) == 220 and all(c['read_only'] for c in ip)
+    assert not any(c['read_only'] for c in channels if c['mode'] != 'IP')
+    assert sorted(c['index']['B'] for c in ip if 'B' in c['groups']) == list(range(251, 266))
+    assert all(c['sim_entry_id'] for c in ip)
+    status = client.get('/api/status').json()
+    assert status['modes'] == {'Cable': 170, 'Satellite': 709}               # tuner only, as before
+    assert status['ip'] == {'channels': 220, 'favorites': {'B': 15}}
+    assert status['favorites']['B'] == 15                                       # lists count tuner_on and ip
+    assert len(sim.channels()) == 879                                           # engine view stays tuner-only
+
+
+def test_mode_filter_offers_all_reception_modes(admin):
+    client, _ = admin
+    script = client.get('/static/app.js').text
+    for mode, label in (('Satellite', 'Satellit'), ('Cable', 'Kabel'), ('Terrestrial', 'Antenne'),
+                        ('IP', 'LG Channels (IP)')):
+        assert f"{mode}: '{label}'" in script

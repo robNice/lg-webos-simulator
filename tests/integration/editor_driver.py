@@ -18,9 +18,12 @@ import traceback
 def summary(app):
     with sqlite3.connect(str(app.DB)) as conn:
         conn.row_factory = sqlite3.Row
-        rows = conn.execute('SELECT dvc_chan_id, chan_std_name, chan_no_int, chan_mode_name, '
-                            + ','.join(f'fav_chan_gr_{g.lower()}, favoriteIdx{g}' for g in 'ABCDEFGH')
-                            + ' FROM tuner_on ORDER BY chan_mode_name, chan_no_int, dvc_chan_id').fetchall()
+        tables = ['tuner_on'] + [r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='ip'")]      # v0.6.4: LG Channels too
+        rows = [r for table in tables for r in conn.execute(
+            'SELECT dvc_chan_id, chan_std_name, chan_no_int, chan_mode_name, '
+            + ','.join(f'fav_chan_gr_{g.lower()}, favoriteIdx{g}' for g in 'ABCDEFGH')
+            + f' FROM {table} ORDER BY chan_mode_name, chan_no_int, dvc_chan_id').fetchall()]
         names = dict(conn.execute('SELECT channel_group_id, user_edited_name FROM channel_group_tuner').fetchall())
     channels = []
     for r in rows:
@@ -97,6 +100,45 @@ def main():
             result['results'] = commit['operations']
             app.import_from_tv(host, password, port)
             result['after'] = summary(app)
+        elif action == 'edit-write':
+            # rest: JSON list of local edits, then preview, transfer and re-import (editor v0.6.4)
+            #   {"op": "members", "group": "A", "ids": [...]}   list membership and order
+            #   {"op": "number", "id": "...", "number": 20}     local number change (swap rules of the editor)
+            steps = json.loads(rest[0])
+            app.import_from_tv(host, password, port)
+            result['before'] = summary(app)
+            with app.connection() as conn:
+                with conn:
+                    for step in steps:
+                        if step['op'] == 'members':
+                            app.replace_group_members(conn, step['group'], step['ids'])
+                        elif step['op'] == 'number':
+                            app.change_single_number(conn, step['id'], step['number'])
+                        else:
+                            raise SystemExit(f'unknown step {step}')
+            result['local'] = summary(app)
+            preview = app.prepare_tv_write(host, password, port)
+            result['preview'] = [{k: v for k, v in op.items() if k != 'warning'} for op in preview['operations']]
+            commit = app.commit_tv_write(host, password, port, preview['token'])
+            result['results'] = commit['operations']
+            app.import_from_tv(host, password, port)
+            result['after'] = summary(app)
+        elif action == 'reload-groups':
+            # rest: JSON {"group": "D", "ids": [...]} – local edit WITHOUT transfer, then "reload lists from TV"
+            spec = json.loads(rest[0])
+            app.import_from_tv(host, password, port)
+            with app.connection() as conn:
+                with conn:
+                    app.replace_group_members(conn, spec['group'], spec['ids'])
+            result['local'] = summary(app)
+            result['reload'] = app.reload_tv_groups(host, password, True, port)
+            result['after'] = summary(app)
+        elif action == 'backup-folders':
+            # editor v0.6.4 keeps TV backups per <model>-<serial>; the preflight stores one
+            app.import_from_tv(host, password, port)
+            app.tv_sync_preflight(host, password, port)
+            root = app.DATA / 'tv-backups'
+            result['folders'] = sorted(p.name for p in root.iterdir() if p.is_dir()) if root.is_dir() else []
         else:
             raise SystemExit(f'unknown action {action}')
         result['ok'] = True

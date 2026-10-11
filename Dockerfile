@@ -16,6 +16,7 @@ COPY src/ src/
 RUN pip install --no-cache-dir . && rm -rf src build
 
 COPY fixtures/synthetic/ fixtures/synthetic/
+COPY fixtures/recorded/ fixtures/recorded/
 COPY fixtures/scenarios/ fixtures/scenarios/
 COPY config/docker.toml config/docker.toml
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

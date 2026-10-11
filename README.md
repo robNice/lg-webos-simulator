@@ -70,11 +70,21 @@ lg-tv-sim known-hosts [--install DATEI]        lg-tv-sim build-synthetic
 
 | Fixture | Inhalt |
 |---|---|
+| `real_20261011_1417` | Echte Senderliste des LG-TVs vom 11.10.2026 (879 Sender: Satellit 709, Kabel 170; A 51, C 8). Dazu 220 Streamingsender (LG Channels, Tabelle `ip`, Empfangsart `IP`). Bereinigt: nur `ip.call_num` (Kontakt-E-Mails der Anbieter) und `ip.ip_chan_service_url` (Stream-URLs, teils mit Keys) geleert, alles andere unverändert. Liegt in `fixtures/recorded/` |
+| `real_20261011_2301` | **Standard.** Echte Senderliste desselben TVs vom 11.10.2026 23:01: wie 14:17, zusätzlich 5 LG Channels in Liste D (251–255, vom Editor übertragene Reihenfolge) und Liste B umbenannt in „AI-Favoriten“. Gleich bereinigt (`ip.call_num`, `ip.ip_chan_service_url`) |
+| `real_20261011_1417_ipfav` | Wie `real_20261011_1417`, zusätzlich 15 LG-Channels-Sender (100 „LG 1“ … 984 „YTN“) in der dort leeren Liste B, gespeichert wie am TV: Indizes 251–265 in `ip` und je eine Zeile in `favorite_idx`. Erzeugt per `lg-tv-sim build-synthetic`. **Achtung:** Wer vom Simulator importiert und danach am echten TV überträgt, muss vorher die Listen vom echten TV neu laden, sonst stehen diese 15 Sender in der Arbeitskopie |
+| `mixed_modes` | Alle Empfangsarten auf kleinem Raum: 12 Satellit, 3 Kabel (Kabel 1 neben Satellit 1), 2 Antenne, 5 LG Channels; Liste A mit 4 Satellit- und 2 IP-Mitgliedern (IP ab 251), Liste D nur IP (251–253). Grundlage der E2E-Tests für Editor v0.6.4 |
 | `mini` | 19 Einträge: WELT HD 13/403/1015, zwei Einträge auf 101, Tauschpaar 20/21, vorhandene Astra-Kopie (HGTV HD 1827/26), gleichnamige Dienste, Kabel |
 | `synthetic_favorites_47` | 112 Einträge, 47 Favoriten in A (Neunummerierung erfordert 49 MOVE, 7 SWAP, 4 COPY), B–H, Radio, Kabel |
+| `synthetic_realistic` | 915 Einträge nach der Struktur eines echten Backups nach dem Umnummerieren: Satellit 603 TV / 106 Radio, Kabel 101 / 69, A = Astra-Kopien auf 1–51, C = Radio 70–77, echte ID-Layouts (Radio-Flag, `min_no` ohne LCN), Doppelnummern, verschlüsselte Sender. Namen und DVB-Daten erfunden, dazu 36 erfundene Antennensender (26 TV, 10 Radio) |
 
 Eigene Sicherungen: `lg-tv-sim import-fixture fixtures/private/channel.sql --name meintv` (landet in
-`.simulator/fixtures/`, git-ignoriert). Fehlerszenarien liegen als YAML in `fixtures/scenarios/` und sind in
+`.simulator/fixtures/`, git-ignoriert) und erscheint danach in der Fixture-Auswahl. Mit `--public` landet die
+Sicherung bereinigt in `fixtures/recorded/` und darf committet werden: `ip.call_num` und `ip.ip_chan_service_url`
+werden geleert, und der
+Import bricht ab, wenn danach noch irgendwo E-Mail-Adressen, URLs oder `key=`/`token=`-Parameter stehen. Bei echten Daten lehnt der
+Simulator das Umnummerieren von Einträgen ab, deren ID nicht `maj = min = Nummer` kodiert (siehe
+[docs/compatibility-gaps.md](docs/compatibility-gaps.md)). Fehlerszenarien liegen als YAML in `fixtures/scenarios/` und sind in
 [docs/observed-lg-behavior.md](docs/observed-lg-behavior.md) beschrieben. Unbekannte Schlüssel führen zu einem Fehler.
 
 ## Tests
@@ -109,7 +119,7 @@ Gebaut wird automatisch (`.github/workflows/`), jeweils erst nach grünem `ruff 
 
 - Jeder Push auf `dev` baut `:dev`.
 - Ein Tag `vX.Y.Z` auf `main` baut `:X.Y.Z` und, außer bei Vorabversionen wie `1.0.0-rc1`, `:latest`. Der
-  Tag muss `__version__` in `src/lg_tv_sim/__init__.py` entsprechen (einzige Versionsquelle, `pyproject.toml`
+  Tag muss `__version__` in `src/lg_tv_sim/version.py` entsprechen (einzige Versionsquelle, `pyproject.toml`
   liest sie). Tags außerhalb von `main` werden abgelehnt.
 
 Beispiel: [docs/docker-compose.example.yml](docs/docker-compose.example.yml). Ports nur auf `127.0.0.1`

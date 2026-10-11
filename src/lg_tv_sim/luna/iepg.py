@@ -10,6 +10,7 @@ from lg_tv_sim.domain.engine import EngineResult, TvEngine
 from lg_tv_sim.domain.models import (
     FAVORITE_GROUP_ID_BASE,
     GROUPS,
+    IP_MODE,
     ChannelEntry,
     LunaError,
     UnsupportedOperation,
@@ -48,6 +49,28 @@ class Params:
         return value
 
 
+# channelMode values of getChannelList (E2): "Tuner" = satellite + cable + antenna (antenna: assumption), "IP" =
+# LG Channels; single modes case-insensitive. Anything else fails closed.
+CHANNEL_MODES = {'tuner': ('Satellite', 'Cable', 'Terrestrial'), 'satellite': ('Satellite',), 'cable': ('Cable',),
+                 'terrestrial': ('Terrestrial',), 'ip': (IP_MODE,)}
+# satelliteName where the row has none (E3): cable " ", LG Channels "UNKNOWN"; antenna like cable (assumption).
+DEFAULT_SATELLITE_NAME = {'Cable': ' ', 'Terrestrial': ' ', IP_MODE: 'UNKNOWN'}
+
+
+def channel_modes(p: Params) -> set[str]:
+    """``channelMode`` as a string or a non-empty list of strings (editor v0.6.4 sends ["Tuner", "IP"])."""
+    value = p.get('channelMode', object)
+    values = [value] if isinstance(value, str) else value
+    if not isinstance(values, list) or not values or not all(isinstance(v, str) for v in values):
+        raise LunaError('ERROR_INVALID_PARAMETER', "'channelMode' must be a string or a non-empty list of strings")
+    modes: set[str] = set()
+    for item in values:
+        if item.lower() not in CHANNEL_MODES:
+            raise UnsupportedOperation(f'channelMode {item!r} is not simulated')
+        modes.update(CHANNEL_MODES[item.lower()])
+    return modes
+
+
 def channel_json(entry: ChannelEntry) -> dict:
     data = {
         'channelId': entry.channel_id,
@@ -55,7 +78,7 @@ def channel_json(entry: ChannelEntry) -> dict:
         'channelName': entry.name,
         'channelMode': entry.mode,
         'channelType': entry.channel_type,
-        'satelliteName': entry.satellite,
+        'satelliteName': entry.satellite or DEFAULT_SATELLITE_NAME.get(entry.mode, ''),
         'ONID': entry.dvb.onid,
         'TSID': entry.dvb.tsid,
         'SVCID': entry.dvb.sid,
@@ -77,7 +100,7 @@ def get_channel_list(engine: TvEngine, params: dict, **_) -> EngineResult:
         raise UnsupportedOperation('compressed channel lists are not simulated (current editor does not request them)')
     if p.get('dataType', int, required=False, default=0) != 0 or p.get('sort', int, required=False, default=0) != 0:
         raise UnsupportedOperation('only dataType 0 and sort 0 are simulated')
-    mode = p.get('channelMode', str)
+    modes = channel_modes(p)
     channel_type = p.get('channelType', str, required=False)
     groups = p.get('channelGroup', list, required=False, default=['All'])
     if groups != ['All']:
@@ -90,7 +113,7 @@ def get_channel_list(engine: TvEngine, params: dict, **_) -> EngineResult:
         hide_invisible = True
     entries, stale = engine.visible_entries()
     selected = [e for e in entries
-                if e.mode.lower() == mode.lower()
+                if e.mode in modes
                 and (channel_type is None or e.channel_type == channel_type)
                 and not (hide_invisible and e.invisible)]
     selected.sort(key=lambda e: (e.number, e.channel_id))
@@ -105,6 +128,7 @@ def get_channel(engine: TvEngine, params: dict, **_) -> EngineResult:
     entries, stale = engine.visible_entries()
     found = [e for e in entries if e.channel_id == channel_id]
     if len(found) != 1:
+        engine.reject_ip_channel(channel_id)
         raise LunaError('CHANNEL_ERROR_NOT_FOUND', f'Channel not found: {channel_id}')
     return EngineResult(value={'returnValue': True, 'channel': channel_json(found[0])},
                         effect='STALE_READ' if stale else 'READ')

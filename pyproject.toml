@@ -30,8 +30,8 @@ dev = [
 lg-tv-sim = "lg_tv_sim.cli:main"
 
 [tool.setuptools.dynamic]
-# single source of the version: src/lg_tv_sim/__init__.py (release tags vX.Y.Z must match)
-version = { attr = "lg_tv_sim.__version__" }
+# single source of the version: src/lg_tv_sim/version.py (release tags vX.Y.Z must match)
+version = { attr = "lg_tv_sim.version.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

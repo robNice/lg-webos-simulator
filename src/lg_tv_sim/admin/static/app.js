@@ -1,3 +1,7 @@
+// Reception modes as LG names them (chan_mode_name); IP = LG Channels (table ip, read-only).
+const MODE_LABELS = {Satellite: 'Satellit', Cable: 'Kabel', Terrestrial: 'Antenne', IP: 'LG Channels (IP)'};
+const modeLabel = mode => MODE_LABELS[mode] || mode;
+
 'use strict';
 
 class AdminClient {
@@ -121,7 +125,8 @@ class AdminPage {
     this.el('scenario').value = s.scenario;
     const cards = [
       ['Fixture', s.fixture], ['Profil', s.profile], ['Szenario', s.scenario],
-      ['Sender', `${s.channels} (${Object.entries(s.modes).map(([m, n]) => `${m} ${n}`).join(', ')})`],
+      ['Sender', `${s.channels + s.ip.channels} (${[...Object.entries(s.modes), ['IP', s.ip.channels]]
+        .filter(([, n]) => n).map(([m, n]) => `${modeLabel(m)} ${n}`).join(', ')})`],
       ['Favoriten', Object.entries(s.favorites).filter(([, n]) => n).map(([g, n]) => `${g}:${n}`).join(' ') || '–'],
       ['SSH-Sitzungen', `${s.connections} (schreibend: ${s.active_writers.length})`],
       ['Verzögerte Sicht', s.stale_view ? `${s.stale_view.remaining_reads} Reads / bis ${s.stale_view.until_virtual_ms} ms` : 'nein'],
@@ -147,8 +152,11 @@ class AdminPage {
   renderModes() {
     const select = this.el('mode-filter');
     const current = select.value;
-    const modes = [...new Set(this.channels.map(c => c.mode))].sort();
-    select.replaceChildren(new Option('alle Modi', ''), ...modes.map(m => new Option(m, m)));
+    const counts = {};
+    for (const c of this.channels) counts[c.mode] = (counts[c.mode] || 0) + 1;
+    const modes = [...Object.keys(MODE_LABELS), ...Object.keys(counts).filter(m => !(m in MODE_LABELS)).sort()];
+    select.replaceChildren(new Option('alle Modi', ''),
+      ...modes.map(m => new Option(`${modeLabel(m)} (${counts[m] || 0})`, m)));
     select.value = modes.includes(current) ? current : '';
   }
 
@@ -165,7 +173,9 @@ class AdminPage {
       const groups = c.groups.map(g => `${g}${c.index[g] + 1}`).join(' ');
       const origin = [c.copy_of ? 'Kopie' : '', c.id_history.length > 1 ? `IDs: ${c.id_history.length}` : '',
                       ...c.tags].filter(Boolean).join(', ');
-      for (const [value, cls] of [[c.number, 'num'], [c.name], [c.mode], [c.channel_id, 'mono'], [c.dvb, 'mono'],
+      if (c.read_only) tr.className = 'read-only';
+      const name = c.read_only ? `${c.name} · nur lesbar` : c.name;
+      for (const [value, cls] of [[c.number, 'num'], [name], [modeLabel(c.mode)], [c.channel_id, 'mono'], [c.dvb, 'mono'],
                                   [groups], [c.satellite_lcn ? 'ja' : ''], [origin], [c.sim_entry_id, 'mono sim']]) {
         const td = document.createElement('td');
         td.textContent = value ?? '';

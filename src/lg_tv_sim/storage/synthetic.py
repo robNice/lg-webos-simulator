@@ -10,6 +10,8 @@ import json
 import random
 from pathlib import Path
 
+from lg_tv_sim.storage.fixtures import RADIO_FLAG  # noqa: F401  (re-exported for tests)
+
 SATELLITE_NAMES = [
     'Das Erste HD', 'ZDF HD', 'RTL HD', 'SAT.1 HD', 'ProSieben HD', 'VOX HD', 'kabel eins HD', 'RTLZWEI HD',
     'arte HD', '3sat HD', 'phoenix HD', 'ZDFneo HD', 'WELT HD', 'n-tv HD', 'tagesschau24 HD', 'ONE HD',
@@ -125,7 +127,142 @@ def favorites_47(seed: int = 47) -> dict:
             'channels': channels}
 
 
-GENERATORS = {'mini': mini, 'synthetic_favorites_47': favorites_47}
+# Invented names for synthetic_realistic (no real channel list is reproduced).
+_PLACES = ['Nordlicht', 'Alpenblick', 'Rheinwelle', 'Elbtal', 'Sonnenhang', 'Bergland', 'Küstenland', 'Hansestern',
+           'Weserbogen', 'Mainufer', 'Donaublau', 'Heideland', 'Seenplatte', 'Moselgold', 'Harzfeuer', 'Waldmeer',
+           'Inselwind', 'Talblick', 'Morgenrot', 'Abendstern', 'Silberfluss', 'Lindenhof', 'Kranich', 'Bernstein',
+           'Polarstern', 'Feldberg', 'Ostwind', 'Westpark', 'Südhang', 'Lichtung', 'Sternwarte', 'Leuchtturm']
+_GENRES = ['TV', 'Info', 'Kids', 'Sport', 'Doku', 'Musik', 'Kino', 'Shop', 'News', 'Serie', 'Comedy', 'Kultur',
+           'Reise', 'Natur', 'Retro', 'Wissen', 'Krimi', 'Family']
+_RADIO = ['Welle', 'Radio', 'Funk', 'Klassik', 'Jazz', 'Pop', 'Rock', 'Schlager', 'Talk']
+_ANTENNA_TV = ['Antenne Nordsee TV', 'Region Mitte Eins', 'Stadtkanal Hafen', 'Landesblick HD', 'Kanal Talaue',
+               'Bürger-TV Lindenau', 'Heimatfenster', 'Turmfunk TV', 'Ostseewelle TV', 'Flachland Info',
+               'Allgäu Panorama', 'Kanal Erzgebirge', 'Rheinebene TV', 'Hügelland HD', 'Studio Kranichfeld',
+               'Börde Fernsehen', 'Marschland TV', 'Teutoburg Kanal', 'Vulkaneifel TV', 'Spreewald Info',
+               'Kanal Neckartal', 'Wattenmeer TV', 'Hochrhein HD', 'Lausitz Live', 'Fichtelblick', 'Uckermark TV']
+_ANTENNA_RADIO = ['Antenne Nordsee', 'Radio Talaue', 'Turmfunk', 'Welle Lindenau', 'Radio Marschland',
+                  'Klassikwelle Mitte', 'Radio Spreewald', 'Hafenfunk', 'Radio Hochrhein', 'Lausitzwelle']
+
+
+def realistic(seed: int = 1417) -> dict:
+    """Shape of a real LG backup after a confirmed renumbering (counts, ID layouts, lists A and C, Astra
+    copies, duplicate numbers, scrambled share), with invented names and DVB triplets, plus antenna services.
+
+    Satellite: 603 TV / 106 radio; cable: 101 TV / 69 radio; antenna: 26 TV / 10 radio (invented, the
+    terrestrial LG codes are a SIMULATOR_ASSUMPTION).
+    """
+    rng = random.Random(seed)
+    names = iter(f'{place} {genre}{" HD" if (i + j) % 3 else ""}'
+                 for i, place in enumerate(_PLACES) for j, genre in enumerate(_GENRES))
+    transponders = [(1001 + t, 10 + t, 1 if t < 38 else 133) for t in range(51)]   # tsid, phy, onid
+    sids = iter(range(10001, 20000))
+
+    def sat_service(name=None, radio=False):
+        tsid, phy, onid = transponders[rng.randrange(len(transponders))]
+        return {'name': name or next(names), 'mode': 'Satellite', 'phy': phy, 'tsid': tsid, 'sid': next(sids),
+                'onid': onid, 'frequency': 10744 + 39 * (phy - 10), 'radio': radio}
+
+    def entry(service, number, *, lcn, minor=None, **extra):
+        channel = {k: v for k, v in service.items() if k != 'radio' or v}
+        channel.update(number=number, **({'lcn': 1} if lcn else {}), **extra)
+        if minor is not None:
+            channel['min'] = minor
+        return channel
+
+    channels = []
+    high_numbers = iter(rng.sample(range(100, 1000), 900))
+    # 55 Astra copies at 1..55 (A = 1..51), each with its LCN original at 100..999.
+    for n in range(1, 56):
+        service = sat_service()
+        lcn_copy = n % 3 != 0                                  # 37 LCN copies, 18 without LCN (min = old slot)
+        favorites = {'A': n - 1} if n <= 51 else None
+        channels.append(entry(service, n, lcn=lcn_copy, minor=None if lcn_copy else rng.randrange(6, 22),
+                              **({'favorites': favorites} if favorites else {})))
+        channels.append(entry(service, next(high_numbers), lcn=True))
+    # Further TV: LCN services at 100..999, non-LCN services at >= 1000 (mostly min 0), duplicate entries.
+    for _ in range(340):
+        channels.append(entry(sat_service(), next(high_numbers), lcn=True))
+    high = iter(rng.sample(range(1000, 4097), 300))
+    singles = []
+    for _ in range(123):
+        minor = 0 if rng.random() < 0.65 else rng.randrange(1, 916)
+        singles.append(entry(sat_service(), next(high), lcn=False, minor=minor))
+    channels += singles
+    for source in rng.sample(singles, 30):                       # same service on a second number
+        channels.append({**source, 'number': next(high)})
+    # Radio: C = 70..77 (LCN), others at 100..629, 21 without LCN (min 0); numbers may coincide with TV.
+    for position, n in enumerate(range(70, 78)):
+        channels.append(entry(sat_service(f'{_PLACES[position]} {_RADIO[position]}', radio=True), n, lcn=True,
+                              favorites={'C': position}))
+    radio_numbers = rng.sample(range(100, 630), 98)
+    for i, n in enumerate(radio_numbers):
+        name = f'{_PLACES[(i + 8) % len(_PLACES)]} {_RADIO[(i + 8) // len(_PLACES) % len(_RADIO)]} {i + 1}'
+        channels.append(entry(sat_service(name, radio=True), n, lcn=i >= 21))
+    sat_tv = [c for c in channels if not c.get('radio')]
+    for c in rng.sample([c for c in sat_tv if c['number'] > 99], 210):
+        c['scrambled'] = 1
+    # Cable: own number space 1..115, TV and radio share numbers; names partly as on satellite.
+    cable_names = [c['name'] for c in sat_tv[:110:2]] + [next(names) for _ in range(46)]
+    for i, n in enumerate(sorted(rng.sample(range(1, 116), 101))):
+        phy = 1 + i % 17
+        channels.append({'name': cable_names[i], 'mode': 'Cable', 'number': n, 'phy': phy, 'tsid': phy + 4,
+                         'sid': next(sids), 'onid': 133 if i < 13 else 1, 'frequency': 114000 + 8000 * phy})
+    for i, n in enumerate(sorted(rng.sample(range(2, 78), 69))):
+        phy = 1 + i % 17
+        channels.append({'name': f'{_PLACES[i % len(_PLACES)]} {_RADIO[i % len(_RADIO)]} Kabel', 'mode': 'Cable',
+                         'number': n, 'phy': phy, 'tsid': phy + 4, 'sid': next(sids), 'onid': 1,
+                         'frequency': 114000 + 8000 * phy, 'radio': True})
+    # Antenna (DVB-T2): six multiplexes on UHF 21..48, TV 1..26, radio 27..36.
+    muxes = [(21 + 5 * m, 12289 + m) for m in range(6)]
+    for i, name in enumerate(_ANTENNA_TV + _ANTENNA_RADIO):
+        phy, tsid = muxes[i % len(muxes)]
+        radio = i >= len(_ANTENNA_TV)
+        channel = {'name': name, 'mode': 'Terrestrial', 'number': i + 1, 'phy': phy, 'tsid': tsid,
+                   'sid': 700 + i, 'onid': 8468, 'satellite': ' ', 'frequency': 474000 + 8000 * (phy - 21)}
+        if radio:
+            channel['radio'] = True
+        elif i % 3 == 2:
+            channel['scrambled'] = 1
+        channels.append(channel)
+    return {'name': 'synthetic_realistic', 'version': 1, 'seed': seed,
+            'description': 'Structure of a real LG backup after renumbering (603/106 satellite TV/radio, '
+                           '101/69 cable, A = 1..51 Astra copies, C = radio 70..77, real ID layouts incl. '
+                           'radio flag and non-LCN min values) with invented names, plus 36 antenna services.',
+            'channels': channels}
+
+
+def _ip(name, number, **extra):
+    return {'name': name, 'number': number, 'mode': 'IP', **extra}
+
+
+def mixed_modes() -> dict:
+    """Small list with every reception mode (editor v0.6.4): satellite, cable (number 1 also on satellite),
+    antenna, LG Channels; list A mixes tuner and IP members, list D is a pure IP list from 251 (E5, E8)."""
+    channels = [_sat(name, number, 1001 + number, 10100 + number,
+                     favorites={'A': number - 1} if number <= 4 else None)
+                for number, name in enumerate(SATELLITE_NAMES[:12], start=1)]
+    channels += [
+        _cable('Stadtkanal Hafen', 1, 5, 601, 1),                 # same number as satellite 1 (own number space)
+        _cable('Kabel Regional', 20, 5, 602, 2),
+        _cable('Kabel Klassik', 21, 5, 603, 3, radio=True),
+        {'name': 'Antenne Nordsee TV', 'mode': 'Terrestrial', 'number': 1, 'phy': 21, 'tsid': 12289, 'sid': 700,
+         'onid': 8468, 'satellite': ' '},
+        {'name': 'Radio Talaue', 'mode': 'Terrestrial', 'number': 2, 'phy': 21, 'tsid': 12289, 'sid': 701,
+         'onid': 8468, 'satellite': ' ', 'radio': True},
+        _ip('LG 1', 100, favorites={'D': 0}),
+        _ip('LG 1: Film', 101, favorites={'D': 1}),
+        _ip('Stream Kino', 205, favorites={'A': 10}),
+        _ip('Stream Doku', 206, favorites={'A': 11}),
+        _ip('Stream News', 210, favorites={'D': 2}),
+    ]
+    return {'name': 'mixed_modes', 'version': 1, 'seed': 0,
+            'description': 'Every reception mode: 12 satellite, 3 cable (cable 1 next to satellite 1), 2 antenna, '
+                           '5 LG Channels; A = 4 satellite + 2 IP (IP block from 251), D = 3 IP (251-253).',
+            'channels': channels}
+
+
+GENERATORS = {'mini': mini, 'synthetic_favorites_47': favorites_47, 'synthetic_realistic': realistic,
+              'mixed_modes': mixed_modes}
 
 
 def write_all(directory: Path) -> list[Path]:

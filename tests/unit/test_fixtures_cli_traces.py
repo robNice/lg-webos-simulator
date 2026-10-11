@@ -6,14 +6,14 @@ import pytest
 from lg_tv_sim.cli import main
 from lg_tv_sim.storage import database
 from lg_tv_sim.storage.fixtures import FixtureCatalog, FixtureError, build_from_spec, inspect_sqlite
-from lg_tv_sim.storage.synthetic import favorites_47, mini
+from lg_tv_sim.storage.synthetic import GENERATORS, favorites_47, mini
 from lg_tv_sim.traces.comparator import compare
 from lg_tv_sim.traces.sanitizer import sanitize
 from tests.conftest import REPO
 
 
 def test_committed_specs_match_generators():
-    for name, generator in (('mini', mini), ('synthetic_favorites_47', favorites_47)):
+    for name, generator in GENERATORS.items():
         committed = json.loads((REPO / 'fixtures' / 'synthetic' / f'{name}.json').read_text(encoding='utf-8'))
         assert committed == generator(), f'run `lg-tv-sim build-synthetic` ({name})'
 

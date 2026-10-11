@@ -17,7 +17,12 @@ import json
 from dataclasses import dataclass, field
 
 GROUPS = 'ABCDEFGH'
-NOT_MEMBER_INDEX = 250          # observed in real backups for non-members
+NOT_MEMBER_INDEX = 250
+# LG Channels (table ip): members of a favorite list start at 251 (E5, E8); non-members carry 255 in the real
+# backup of 11.10.2026 14:17 (tuner non-members: 250).
+IP_MODE = 'IP'
+IP_FIRST_INDEX = 251
+IP_NOT_MEMBER_INDEX = 255          # observed in real backups for non-members
 FAVORITE_GROUP_ID_BASE = 200    # channel_group_tuner ids 200..207 = A..H
 CHANNEL_TABLES = ('tuner_on', 'tuner_off')
 
@@ -145,6 +150,15 @@ class UnsupportedOperation(LunaError):
 
     def __init__(self, text: str):
         super().__init__('SIM_UNSUPPORTED', text)
+
+
+class UnsupportedIpChannel(UnsupportedOperation):
+    """LG Channels (table ``ip``): no Luna read or write is verified on the TV, so none is simulated as success."""
+
+    def __init__(self, channel_id: str):
+        super().__init__(f'LG Channels / IP service {channel_id!r} is only readable via the SQLite backup; '
+                         'Luna access to IP services is not simulated (unverified on the TV)')
+        self.code = 'SIM_UNSUPPORTED_IP_CHANNEL'
 
 
 class InvariantViolation(RuntimeError):

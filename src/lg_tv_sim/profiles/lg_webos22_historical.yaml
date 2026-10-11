@@ -6,6 +6,13 @@ description: >-
 number_min: 1
 number_max: 9999
 read_after_write_stale_reads: 0
+favorites:
+  # Lists with tuner and LG Channels members (editor v0.6.4). IP members start at 251 (E5; reordering inside a
+  # pure IP block confirmed, E8). U1 unknown: can an IP member move before a tuner member? true = no (the IP
+  # block stays behind the tuner members, the move answers returnValue true without effect).
+  ip_block_after_tuner: true
+  ip_first_index: 251
+  ip_not_member_index: 255   # value of IP non-members in the real backup (tuner non-members: 250)
 number_rules:
   - id: deny-tagged-high-target
     when: {tags_any: [deny_above_99], target_min: 100}
