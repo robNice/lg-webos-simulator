@@ -95,6 +95,7 @@ def test_login_dialog_replaces_browser_prompt(admin):
     client, _ = admin
     page, script = client.get('/').text, client.get('/static/app.js').text
     assert 'id="login"' in page and 'LG_TV_SIM_ADMIN_TOKEN' in page
+    assert '>Passwort <input' in page and 'Token' not in page   # plain wording for users
     assert 'window.prompt' not in script        # parallel 401s used to open one prompt per request
 
 

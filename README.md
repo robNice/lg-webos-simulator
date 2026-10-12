@@ -147,7 +147,7 @@ docker compose exec lg-tv-sim lg-tv-sim known-hosts >> ~/.ssh/known_hosts
 
 | Variable | Wirkung |
 |---|---|
-| `LG_TV_SIM_ADMIN_TOKEN` | öffnet die Admin-Oberfläche für jeden Hostnamen (z. B. `http://omv:8767`); die API verlangt dann den Token, die Seite fragt einmal pro Sitzung danach. Ohne Token nur `127.0.0.1`/`localhost` |
+| `LG_TV_SIM_ADMIN_TOKEN` | öffnet die Admin-Oberfläche für jeden Hostnamen (z. B. `http://omv:8767`); das ist dann das Passwort der Seite, sie fragt einmal pro Browser-Tab danach (nicht das SSH-Passwort). Ohne Token nur `127.0.0.1`/`localhost` |
 | `LG_TV_SIM_PASSWORD` | SSH-Passwort für den Editor, sonst generiert (`.simulator/credentials`) |
 | `LG_TV_SIM_FIXTURE`, `LG_TV_SIM_SCENARIO` | Startzustand und Fehlerszenario |
 | `LG_TV_SIM_MODEL`, `LG_TV_SIM_SERIAL` | gemeldete TV-Identität (Seriennummer muss mit `SIM-` beginnen) |

@@ -20,7 +20,8 @@ services:
       TZ: Europe/Berlin
       PUID: "1000"                       # owner of the two folders on the host (id -u); never 0
       PGID: "1000"                       # (id -g)
-      # Admin UI from other machines: set a token (any long string); the page asks for it once per session.
+      # Admin UI from other machines: set a password for the web page (any long string); the page asks for it
+      # once per browser tab. Not the SSH password below.
       # Without it the admin UI only answers on the Docker host itself (http://127.0.0.1:8767).
       # LG_TV_SIM_ADMIN_TOKEN: "change-me-to-something-long"
       # SSH password for the editor (never the real TV password); otherwise generated, see

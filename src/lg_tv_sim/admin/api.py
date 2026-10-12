@@ -70,7 +70,7 @@ def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
         if not token and host not in ALLOWED_HOSTS:
             return PlainTextResponse('forbidden host: without LG_TV_SIM_ADMIN_TOKEN the admin UI only answers on '
                                      '127.0.0.1/localhost. Set LG_TV_SIM_ADMIN_TOKEN (e.g. in docker-compose) to '
-                                     'open it under any host name; the page then asks for the token.',
+                                     'open it under any host name; the page then asks for that password.',
                                      status_code=403)
         response = await call_next(request)
         response.headers['X-Content-Type-Options'] = 'nosniff'

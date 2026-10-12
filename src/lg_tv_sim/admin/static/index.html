@@ -18,11 +18,11 @@
 <dialog id="login" aria-labelledby="login-title">
   <form id="login-form" method="dialog">
     <h2 id="login-title">Anmeldung</h2>
-    <p class="muted">Diese Admin-Oberfläche ist durch ein Token geschützt. Es ist der Wert von
-      <code>LG_TV_SIM_ADMIN_TOKEN</code> aus deiner docker-compose-Datei bzw. Umgebung.
-      Er wird nur für diesen Browser-Tab gemerkt.</p>
-    <label class="stack">Admin-Token <input id="login-token" type="password" autocomplete="current-password" required></label>
-    <p id="login-error" class="bad" hidden>Token falsch, bitte erneut eingeben.</p>
+    <p class="muted">Diese Seite ist durch ein Passwort geschützt. Es steht in deiner docker-compose-Datei unter
+      <code>LG_TV_SIM_ADMIN_TOKEN</code> (nicht zu verwechseln mit dem SSH-Passwort für den Editor). Es wird nur
+      für diesen Browser-Tab gemerkt.</p>
+    <label class="stack">Passwort <input id="login-token" type="password" autocomplete="current-password" required></label>
+    <p id="login-error" class="bad" hidden>Passwort falsch, bitte erneut eingeben.</p>
     <div class="controls"><button type="submit">Anmelden</button></div>
   </form>
 </dialog>
