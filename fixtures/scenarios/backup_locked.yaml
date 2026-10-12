@@ -1,5 +1,5 @@
 id: backup_locked
-description: "sqlite3 .backup fails once with 'database is locked'"
+description: "sqlite3 .backup schlägt einmal mit 'database is locked' fehl"
 seed: 1001
 rules:
   - id: backup-1-locked

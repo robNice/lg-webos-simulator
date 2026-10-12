@@ -1,5 +1,5 @@
 id: timeout_before_mutation
-description: "T31: connection drops on the first changeChannelNumber before anything is written"
+description: "T31: Beim 1. changeChannelNumber bricht die Verbindung ab, bevor etwas geschrieben wird"
 seed: 1001
 rules:
   - id: number-1-drop-before

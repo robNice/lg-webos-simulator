@@ -1,5 +1,5 @@
 id: add_favorite_false_no_mutation
-description: "T28: first setChannelFavoriteGroup answers false and changes nothing"
+description: "T28: Der 1. setChannelFavoriteGroup antwortet false und ändert nichts"
 seed: 1001
 rules:
   - id: add-1-false-no-mutation

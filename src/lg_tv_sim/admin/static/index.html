@@ -4,21 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LG TV Simulator</title>
-<link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png?v={{version}}">
-<link rel="icon" sizes="48x48" href="/favicon.ico?v={{version}}">
-<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png?v={{version}}">
+<link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png?v={{asset}}">
+<link rel="icon" sizes="48x48" href="/favicon.ico?v={{asset}}">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png?v={{asset}}">
 <meta name="theme-color" content="#020d21">
-<link rel="stylesheet" href="/static/style.css?v={{version}}">
+<link rel="stylesheet" href="/static/style.css?v={{asset}}">
 </head>
 <body>
 <header>
-  <div class="brand"><img src="/static/logo.png?v={{version}}" alt="" width="40" height="40"><h1>LG webOS TV Simulator</h1></div>
+  <div class="brand"><img src="/static/logo.png?v={{asset}}" alt="" width="40" height="40"><h1>LG webOS TV Simulator</h1><span class="chip" id="version" title="Simulator-Version">v{{version}}</span></div>
   <div id="conn" class="muted"></div>
 </header>
+<dialog id="login" aria-labelledby="login-title">
+  <form id="login-form" method="dialog">
+    <h2 id="login-title">Anmeldung</h2>
+    <p class="muted">Diese Admin-Oberfläche ist durch ein Token geschützt. Es ist der Wert von
+      <code>LG_TV_SIM_ADMIN_TOKEN</code> aus deiner docker-compose-Datei bzw. Umgebung.
+      Er wird nur für diesen Browser-Tab gemerkt.</p>
+    <label class="stack">Admin-Token <input id="login-token" type="password" autocomplete="current-password" required></label>
+    <p id="login-error" class="bad" hidden>Token falsch, bitte erneut eingeben.</p>
+    <div class="controls"><button type="submit">Anmelden</button></div>
+  </form>
+</dialog>
 <main>
   <section class="cards" id="cards"></section>
   <details class="details" id="details">
     <summary>Details (Run-ID, Hashes, virtuelle Zeit)</summary>
+    <p class="muted small">Gleiche Fixture, gleiches Szenario und gleiche Aufrufe ergeben dieselben Hashes; so lassen sich Läufe vergleichen. Die virtuelle Zeit ist keine Uhrzeit: Sie rückt pro Ereignis um einen festen Schritt vor, damit Läufe reproduzierbar bleiben.</p>
     <div class="cards" id="detail-cards"></div>
   </details>
 
@@ -36,11 +48,58 @@
       <a class="button" href="/api/export/trace" id="export-trace">Trace exportieren</a>
     </div>
     <p id="message" class="muted" aria-live="polite"></p>
+    <details class="help">
+      <summary>Was bedeuten Fixture, Szenario, Reset und Snapshot?</summary>
+      <dl>
+        <dt>Fixture</dt>
+        <dd>Die Senderliste, mit der der simulierte Fernseher startet (synthetische Testlisten oder eine
+          importierte echte Sicherung). Sie selbst wird nie verändert; der Editor arbeitet immer auf einer Kopie.</dd>
+        <dt>Reset auf Fixture</dt>
+        <dd>Verwirft alle Änderungen und startet einen neuen Lauf mit der gewählten Fixture. Das aktive
+          Szenario bleibt dabei aktiv.</dd>
+        <dt>Szenario</dt>
+        <dd>Ein vorbereitetes Fehlverhalten des Fernsehers, z.&nbsp;B. „antwortet <code>false</code>, hat aber
+          trotzdem geändert“. Damit lässt sich prüfen, ob der Editor mit solchen Situationen richtig umgeht.
+          <code>none</code> bedeutet: der TV verhält sich normal. Details unten im Abschnitt „Szenario“.</dd>
+        <dt>Snapshot / Restore</dt>
+        <dd>Snapshot sichert den aktuellen Zustand des simulierten TVs. Restore springt dorthin zurück, etwa um
+          denselben Editor-Vorgang mehrmals vom gleichen Stand aus zu testen.</dd>
+        <dt>Exportieren</dt>
+        <dd>Zustand: aktuelle Senderliste plus Status als JSON. Trace: alle Ereignisse des Laufs als JSON-Lines,
+          z.&nbsp;B. für einen Fehlerbericht.</dd>
+      </dl>
+    </details>
   </section>
 
   <section class="panel">
-    <h2>Fehlerregeln des aktiven Szenarios</h2>
-    <div id="faults" class="muted"></div>
+    <h2>Szenario</h2>
+    <div id="scenario-info"></div>
+    <details class="help">
+      <summary>Wozu Szenarien, und wie arbeitet man damit?</summary>
+      <p>Ein echter LG-TV verhält sich nicht immer sauber: Aufrufe melden Fehler, obwohl sie gewirkt haben,
+        Änderungen werden verzögert sichtbar, Verbindungen brechen mitten im Schreiben ab. Solche Fälle sind am
+        echten Gerät kaum gezielt herbeizuführen. Ein Szenario löst sie im Simulator reproduzierbar aus, damit man
+        sieht, ob der Editor sie erkennt (z.&nbsp;B. durch Nachlesen) statt falsche Daten anzuzeigen.</p>
+      <ol>
+        <li>Oben ein Szenario wählen. Hier erscheint, was es tut und welche Fixture es mitbringt.</li>
+        <li>„Szenario aktivieren (mit Reset)“ startet einen frischen Lauf mit dieser Fixture und scharfen
+          Fehlerregeln.</li>
+        <li>Im Editor die passende Aktion ausführen (z.&nbsp;B. Favoriten umsortieren).</li>
+        <li>Im Ereignis-Journal unten sieht man, welche Regel gegriffen hat, was der Editor als Antwort bekam und
+          was sich tatsächlich geändert hat. Die Zähler hier zeigen Treffer und Auslösungen.</li>
+        <li>Ergebnis mit der Erwartung vergleichen: Zeigt der Editor danach den tatsächlichen Stand?</li>
+      </ol>
+      <p><b>Fehlerregel:</b> Eine Regel besteht aus einem <i>Auslöser</i> (welcher Aufruf, z.&nbsp;B. der 2.
+        <code>moveChannelFavoritePriority</code>) und einer <i>Wirkung</i> (andere Antwort, Änderung unterdrücken,
+        Verbindungsabbruch, Verzögerung …). „Treffer“ zählt passende Aufrufe, „ausgelöst“ wie oft die Wirkung
+        eintrat. Ohne andere Angabe feuert eine Regel nur einmal.</p>
+      <p><b>Wo definiert?</b> Jedes Szenario ist eine YAML-Datei im Szenario-Ordner (Standard:
+        <code>fixtures/scenarios/</code>, im Docker-Image eingebaut). Eigene Szenarien: Ordner mit YAML-Dateien
+        anlegen (z.&nbsp;B. im gemappten <code>/config</code>) und in <code>simulator.toml</code> unter
+        <code>[storage]</code> <code>scenarios_dir = "/config/scenarios"</code> setzen. Dann gilt nur dieser
+        Ordner, also die mitgelieferten Dateien bei Bedarf hineinkopieren. Unbekannte Schlüssel in einer Datei
+        führen zu einem Fehler.</p>
+    </details>
   </section>
 
   <section class="panel">
@@ -69,6 +128,6 @@
     </div>
   </section>
 </main>
-<script src="/static/app.js?v={{version}}"></script>
+<script src="/static/app.js?v={{asset}}"></script>
 </body>
 </html>

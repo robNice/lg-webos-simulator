@@ -1,5 +1,5 @@
 id: return_false_but_favorite_moved
-description: "T27: 2nd moveChannelFavoritePriority changes the order but answers returnValue:false"
+description: "T27: Der 2. moveChannelFavoritePriority ändert die Reihenfolge, antwortet aber returnValue:false"
 fixture: synthetic_favorites_47
 seed: 1001
 evidence: HISTORICAL_REPORTED

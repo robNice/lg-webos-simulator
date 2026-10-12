@@ -1,5 +1,5 @@
 id: copy_instead_of_move
-description: "T30: first changeChannelNumber answers true but creates a COPY instead of a MOVE"
+description: "T30: Der 1. changeChannelNumber antwortet true, erzeugt aber eine Kopie statt den Sender zu verschieben"
 seed: 1001
 rules:
   - id: number-1-copy

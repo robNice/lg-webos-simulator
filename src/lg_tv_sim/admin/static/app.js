@@ -7,6 +7,7 @@ const modeLabel = mode => MODE_LABELS[mode] || mode;
 class AdminClient {
   constructor() {
     try { this.token = sessionStorage.getItem('simToken') || ''; } catch { this.token = ''; }
+    this.login = null;   // one shared login dialog, however many requests got a 401 at the same time
   }
 
   async request(path, body) {
@@ -15,14 +16,32 @@ class AdminClient {
     if (body !== undefined) { options.method = 'POST'; options.body = JSON.stringify(body); }
     const response = await fetch(path, options);
     if (response.status === 401) {
-      const token = window.prompt('Admin-Token (X-Sim-Token):') || '';
-      this.token = token;
-      try { sessionStorage.setItem('simToken', token); } catch { /* ignore */ }
-      if (token) return this.request(path, body);
+      await this.askToken(Boolean(options.headers['X-Sim-Token']));
+      return this.request(path, body);
     }
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail ? JSON.stringify(data.detail) : response.statusText);
     return data;
+  }
+
+  askToken(rejected) {
+    if (this.login) return this.login;
+    const dialog = document.getElementById('login');
+    const input = document.getElementById('login-token');
+    document.getElementById('login-error').hidden = !rejected;
+    this.login = new Promise(resolve => {
+      dialog.oncancel = event => event.preventDefault();   // the page is useless without the token
+      document.getElementById('login-form').onsubmit = () => {
+        this.token = input.value.trim();
+        try { sessionStorage.setItem('simToken', this.token); } catch { /* ignore */ }
+        this.login = null;
+        resolve();
+      };
+      input.value = '';
+      dialog.showModal();
+      input.focus();
+    });
+    return this.login;
   }
 }
 
@@ -55,6 +74,7 @@ class AdminPage {
         this.client.request('/api/snapshots/restore', { confirm: true, snapshot }));
     };
     for (const id of ['search', 'mode-filter', 'group-filter']) this.el(id).oninput = () => this.renderChannels();
+    this.el('scenario').onchange = () => this.renderScenario();
     this.el('show-sim').onchange = e => document.body.classList.toggle('show-sim', e.target.checked);
     const groups = this.el('group-filter');
     for (const g of 'ABCDEFGH') groups.append(new Option(`Gruppe ${g}`, g));
@@ -86,8 +106,9 @@ class AdminPage {
     const fixtureSelect = this.el('fixture');
     fixtureSelect.replaceChildren(...fixtures.map(f => new Option(f, f)));
     const scenarioSelect = this.el('scenario');
-    scenarioSelect.replaceChildren(new Option('none – keine Fehlerinjektion', 'none'),
-      ...scenarios.map(s => new Option(`${s.id} – ${s.description}`, s.id)));
+    scenarioSelect.replaceChildren(new Option('none – normales Verhalten', 'none'),
+      ...scenarios.map(s => new Option(s.id, s.id)));
+    this.scenarios = Object.fromEntries(scenarios.map(s => [s.id, s]));
   }
 
   async refresh() {
@@ -122,7 +143,8 @@ class AdminPage {
   renderStatus(s) {
     this.el('conn').textContent = s.ssh ? `SSH/SFTP: ${s.username}@${s.ssh.host}:${s.ssh.port}` : 'SSH nicht gestartet';
     this.el('fixture').value = s.fixture;
-    this.el('scenario').value = s.scenario;
+    if (this.activeScenario !== s.scenario) this.el('scenario').value = s.scenario;
+    this.activeScenario = s.scenario;
     const cards = [
       ['Fixture', s.fixture], ['Profil', s.profile], ['Szenario', s.scenario],
       ['Sender', `${s.channels + s.ip.channels} (${[...Object.entries(s.modes), ['IP', s.ip.channels]]
@@ -142,11 +164,63 @@ class AdminPage {
     const current = snaps.value;
     snaps.replaceChildren(...s.snapshots.map(id => new Option(id, id)));
     if (s.snapshots.includes(current)) snaps.value = current;
-    const rules = s.faults.rules;
-    this.el('faults').textContent = rules.length
-      ? rules.map(r => `${r.id}: ${r.description || ''} (passend ${r.matched}×, ausgelöst ${r.fired}×)`).join('\n')
-      : 'Keine Fehlerregeln aktiv.';
-    this.el('faults').style.whiteSpace = 'pre-line';
+    this.ruleCounts = Object.fromEntries(s.faults.rules.map(r => [r.id, r]));
+    this.renderScenario();
+  }
+
+  renderScenario() {
+    const id = this.el('scenario').value;
+    const active = id === this.activeScenario;
+    const box = this.el('scenario-info');
+    const node = (tag, text, cls) => {
+      const n = document.createElement(tag);
+      if (text !== undefined) n.textContent = text;
+      if (cls) n.className = cls;
+      return n;
+    };
+    const head = node('p');
+    head.append(node('b', id), node('span', active ? ' · aktiv' : ' · nicht aktiv (zum Ausprobieren oben aktivieren)',
+                                    active ? 'ok' : 'muted'));
+    if (id === 'none' || !this.scenarios || !this.scenarios[id]) {
+      box.replaceChildren(head, node('p', 'Keine Fehlerinjektion: Der simulierte TV antwortet korrekt und ändert genau '
+                                           + 'das, was der Editor verlangt.', 'muted'));
+      return;
+    }
+    const sc = this.scenarios[id];
+    const facts = node('ul', undefined, 'facts');
+    const fact = (label, text) => { const li = node('li'); li.append(node('b', `${label}: `), text); facts.append(li); };
+    fact('Was passiert', sc.description || '–');
+    fact('Startliste', sc.fixture ? `Fixture ${sc.fixture} (wird beim Aktivieren geladen)` : 'aktuelle Fixture bleibt');
+    fact('Herkunft', EVIDENCE[sc.evidence] || sc.evidence);
+    if (sc.read_after_write_stale_reads != null) {
+      fact('Verzögerte Sicht', `Jede Änderung erscheint in der Liste erst nach ${sc.read_after_write_stale_reads} `
+                               + 'weiteren Lesezugriffen.');
+    }
+    const parts = [head, facts];
+    if (sc.rules.length) {
+      parts.push(node('h3', 'Fehlerregeln'));
+      const list = node('ol', undefined, 'rules');
+      for (const r of sc.rules) {
+        const li = node('li');
+        li.append(node('b', r.id), node('span', r.description ? ` – ${r.description}` : ''));
+        const counts = this.ruleCounts && this.ruleCounts[r.id];
+        if (active && counts) li.append(node('span', `  ·  Treffer ${counts.matched}×, ausgelöst ${counts.fired}×`, 'muted'));
+        li.append(node('div', `Auslöser: ${describeMatch(r.match)}`), node('div', `Wirkung: ${describeAction(r.action, r.times)}`));
+        list.append(li);
+      }
+      parts.push(list);
+    }
+    if (sc.expectations.length) {
+      parts.push(node('h3', 'Erwartung an den Editor'));
+      const list = node('ul');
+      for (const e of sc.expectations) {
+        for (const [key, value] of Object.entries(e)) {
+          list.append(node('li', EXPECTATIONS[`${key}:${value}`] || `${key}: ${JSON.stringify(value)}`));
+        }
+      }
+      parts.push(list);
+    }
+    box.replaceChildren(...parts);
   }
 
   renderModes() {
@@ -173,9 +247,7 @@ class AdminPage {
       const groups = c.groups.map(g => `${g}${c.index[g] + 1}`).join(' ');
       const origin = [c.copy_of ? 'Kopie' : '', c.id_history.length > 1 ? `IDs: ${c.id_history.length}` : '',
                       ...c.tags].filter(Boolean).join(', ');
-      if (c.read_only) tr.className = 'read-only';
-      const name = c.read_only ? `${c.name} · nur lesbar` : c.name;
-      for (const [value, cls] of [[c.number, 'num'], [name], [modeLabel(c.mode)], [c.channel_id, 'mono'], [c.dvb, 'mono'],
+      for (const [value, cls] of [[c.number, 'num'], [c.name], [modeLabel(c.mode)], [c.channel_id, 'mono'], [c.dvb, 'mono'],
                                   [groups], [c.satellite_lcn ? 'ja' : ''], [origin], [c.sim_entry_id, 'mono sim']]) {
         const td = document.createElement('td');
         td.textContent = value ?? '';
@@ -210,6 +282,68 @@ class AdminPage {
       return tr;
     }));
   }
+}
+
+const EVIDENCE = {
+  HARDWARE_CONFIRMED: 'am echten TV bestätigt', TRACE_CONFIRMED: 'durch Mitschnitt belegt',
+  HISTORICAL_REPORTED: 'früher von Nutzern gemeldet', CURRENT_CLIENT_CONFIRMED: 'mit aktuellem Editor beobachtet',
+  SIMULATOR_ASSUMPTION: 'Annahme des Simulators (nicht am TV belegt)', UNSUPPORTED: 'nicht unterstützt',
+};
+const COMMANDS = {
+  login_check: 'Verbindungstest beim Login', backup: 'Datenbank-Sicherung (.backup)', select: 'SQL-Abfrage',
+  rm: 'Löschen einer Datei', luna: 'Luna-Aufruf', sftp_read: 'SFTP-Download',
+};
+const EFFECTS = {
+  MOVE: 'Nummer wird verschoben', SWAP: 'Nummern werden getauscht', COPY: 'statt Verschieben entsteht eine Kopie',
+  REUSE_COPY: 'eine vorhandene Kopie wird wiederverwendet', DENY: 'Nummernwechsel wird abgelehnt',
+};
+// Keyed by "name:value" as written in the scenario files' expectations.
+const EXPECTATIONS = {
+  'actual_favorite_order_changed:true': 'Die Favoriten-Reihenfolge hat sich trotz Fehlermeldung tatsächlich geändert.',
+  'additional_entry_on_target:true': 'Auf der Zielnummer steht zusätzlich ein neuer Eintrag (Kopie).',
+  'automatic_rollback:false': 'Es gibt kein automatisches Zurückrollen bereits ausgeführter Schritte.',
+  'client_gets_error:true': 'Der Editor bekommt einen Fehler gemeldet.',
+  'client_needs_bounded_read_back_retries:true': 'Der Editor muss mehrfach (begrenzt) nachlesen, bis die Änderung sichtbar ist.',
+  'editor_must_read_back:true': 'Der Editor muss nach dem Schreiben nachlesen, statt der Antwort zu trauen.',
+  'first_two_steps_applied:true': 'Die ersten beiden Schritte sind geschrieben.',
+  'fixture_unchanged:true': 'Die Senderliste bleibt unverändert.',
+  'membership_changed:true': 'Die Favoriten-Zugehörigkeit hat sich trotz Fehlermeldung geändert.',
+  'membership_changed:false': 'Die Favoriten-Zugehörigkeit bleibt unverändert.',
+  'original_still_on_old_number:true': 'Der ursprüngliche Sender steht weiterhin auf seiner alten Nummer.',
+  'state_changed:true': 'Der TV-Zustand hat sich geändert.',
+  'state_unchanged:true': 'Der TV-Zustand ist unverändert.',
+  'write_status_uncertain:true': 'Der Editor kann nicht wissen, ob geschrieben wurde, und muss nachlesen.',
+};
+
+function describeMatch(m) {
+  const what = m.method ? `Luna-Aufruf ${m.method}` : COMMANDS[m.command || (m.service ? 'luna' : '')] || 'jeder Aufruf';
+  const extra = [
+    m.service && !m.method ? `Dienst ${m.service}` : '',
+    m.channel_id ? `Sender ${m.channel_id}` : '', m.sim_tag ? `Sender mit Markierung „${m.sim_tag}“` : '',
+    m.target_number != null ? `Zielnummer ${m.target_number}` : '', m.group ? `Favoritengruppe ${m.group}` : '',
+  ].filter(Boolean);
+  const nth = m.nth_call ? `der ${m.nth_call}. passende Aufruf: ` : '';
+  return nth + what + (extra.length ? ` (${extra.join(', ')})` : '');
+}
+
+function describeAction(a, times) {
+  const parts = [];
+  if (a.disconnect === 'before') parts.push('Verbindung bricht ab, bevor etwas geschrieben wird');
+  else if (a.disconnect === 'after') {
+    parts.push(a.mutate === false ? 'Verbindung bricht ohne Antwort ab, nichts wird geschrieben'
+      : 'Änderung wird geschrieben, dann bricht die Verbindung ohne Antwort ab');
+  }
+  else parts.push(a.mutate === false ? 'Änderung wird NICHT ausgeführt' : 'Änderung wird ausgeführt');
+  if (a.effect) parts.push(EFFECTS[a.effect] || a.effect);
+  if (a.response) parts.push(`${a.response_mode === 'merge' ? 'Antwort ergänzt um' : 'Antwort lautet'} ${JSON.stringify(a.response)}`);
+  if (a.stale_reads != null) parts.push(`erst nach ${a.stale_reads} Lesezugriffen sichtbar`);
+  if (a.stale_ms != null) parts.push(`erst nach ${a.stale_ms} ms (virtuell) sichtbar`);
+  if (a.exit_status != null) parts.push(`Exit-Status ${a.exit_status}`);
+  if (a.stderr) parts.push(`Fehlerausgabe „${a.stderr.trim()}“`);
+  if (a.hang_ms) parts.push(`Antwort kommt erst nach ${a.hang_ms / 1000} s`);
+  if (a.sftp_abort_after_bytes != null) parts.push(`Download bricht nach ${a.sftp_abort_after_bytes} Bytes ab`);
+  const freq = times == null ? 'bei jedem Treffer' : times === 1 ? 'einmalig' : `bis zu ${times}-mal`;
+  return `${parts.join('; ')} (${freq})`;
 }
 
 function fmt(snapshot) {

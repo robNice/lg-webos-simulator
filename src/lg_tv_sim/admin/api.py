@@ -1,6 +1,7 @@
 """Loopback-only admin API and developer UI.  Uses the same engine/transactions as the SSH path."""
 from __future__ import annotations
 
+import hashlib
 import hmac
 import json
 from pathlib import Path
@@ -19,6 +20,15 @@ if TYPE_CHECKING:
 STATIC = Path(__file__).resolve().parent / 'static'
 STATIC_FILES = {'app.js', 'style.css', 'logo.png', 'favicon-96x96.png', 'apple-touch-icon.png'}
 ALLOWED_HOSTS = {'127.0.0.1', 'localhost', '[::1]', 'testserver'}
+
+
+def asset_tag() -> str:
+    """?v= value: version plus a hash of the static files, so an asset edited within one version is never
+    served from a browser cache that holds the old file as immutable."""
+    digest = hashlib.sha256()
+    for name in sorted(STATIC_FILES | {'favicon.ico'}):
+        digest.update(name.encode() + b'\0' + (STATIC / name).read_bytes())
+    return f'{__version__}-{digest.hexdigest()[:8]}'
 
 
 class Strict(BaseModel):
@@ -87,7 +97,9 @@ def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
 
     api = [Depends(authorized)]
 
-    page = (STATIC / 'index.html').read_text(encoding='utf-8').replace('{{version}}', __version__)
+    tag = asset_tag()
+    page = (STATIC / 'index.html').read_text(encoding='utf-8').replace('{{asset}}', tag)
+    page = page.replace('{{version}}', __version__)
 
     @app.get('/', include_in_schema=False)
     def index():
@@ -97,8 +109,8 @@ def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
     def static(name: str, v: str | None = None):
         if name not in STATIC_FILES:
             raise HTTPException(404)
-        # ?v=<version> (cache busting): this exact version never changes, so browsers may keep it.
-        headers = {'Cache-Control': 'public, max-age=31536000, immutable'} if v == __version__ else None
+        # ?v=<version>-<content hash> (cache busting): that exact tag never changes, so browsers may keep it.
+        headers = {'Cache-Control': 'public, max-age=31536000, immutable'} if v == tag else None
         return FileResponse(STATIC / name, headers=headers)
 
     @app.get('/favicon.ico', include_in_schema=False)
@@ -120,8 +132,13 @@ def create_app(sim: Simulator, token: str | None = None) -> FastAPI:
 
     @app.get('/api/scenarios', dependencies=api)
     def scenarios():
-        return [{'id': s.id, 'description': s.description, 'fixture': s.fixture, 'rules': len(s.rules),
-                 'evidence': s.evidence} for s in sim.scenarios().values()]
+        # Full rules (match/action without unset fields) so the UI can explain them in plain words.
+        return [{'id': s.id, 'description': s.description, 'fixture': s.fixture, 'profile': s.profile,
+                 'evidence': s.evidence, 'read_after_write_stale_reads': s.read_after_write_stale_reads,
+                 'rules': [{'id': r.id, 'description': r.description, 'times': r.times,
+                            'match': r.match.model_dump(mode='json', exclude_none=True),
+                            'action': r.action.model_dump(mode='json', exclude_none=True)} for r in s.rules],
+                 'expectations': s.expectations} for s in sim.scenarios().values()]
 
     @app.get('/api/fixtures', dependencies=api)
     def fixtures():

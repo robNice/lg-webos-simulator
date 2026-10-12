@@ -1,5 +1,5 @@
 id: delayed_visibility
-description: "T29: every write is acknowledged, the live list shows it only after 2 further reads"
+description: "T29: Jede Änderung wird bestätigt, erscheint in der Liste aber erst nach 2 weiteren Lesezugriffen"
 seed: 1001
 read_after_write_stale_reads: 2
 rules: []

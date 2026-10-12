@@ -4,6 +4,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
+from lg_tv_sim import __version__
 from lg_tv_sim.admin.api import create_app
 from tests.helpers import find, live, renumber
 
@@ -75,6 +76,35 @@ def test_activate_scenario_and_lists(admin):
     assert journal[-1]['kind'] == 'reset'
 
 
+def test_scenarios_expose_rules_for_the_admin_ui(admin):
+    client, _ = admin
+    scenarios = {s['id']: s for s in client.get('/api/scenarios').json()}
+    moved = scenarios['return_false_but_favorite_moved']
+    assert moved['fixture'] == 'synthetic_favorites_47' and moved['evidence'] == 'HISTORICAL_REPORTED'
+    [rule] = moved['rules']
+    assert rule['match'] == {'service': 'com.webos.service.iepg', 'method': 'moveChannelFavoritePriority',
+                             'nth_call': 2}
+    assert rule['action']['mutate'] is True and rule['action']['response'] == {'returnValue': False}
+    assert rule['times'] == 1
+    assert scenarios['delayed_visibility']['read_after_write_stale_reads'] == 2
+    assert scenarios['delayed_visibility']['rules'] == []
+    assert any(s.get('expectations') for s in scenarios.values())
+
+
+def test_login_dialog_replaces_browser_prompt(admin):
+    client, _ = admin
+    page, script = client.get('/').text, client.get('/static/app.js').text
+    assert 'id="login"' in page and 'LG_TV_SIM_ADMIN_TOKEN' in page
+    assert 'window.prompt' not in script        # parallel 401s used to open one prompt per request
+
+
+def test_header_shows_version_chip(admin):
+    client, _ = admin
+    page = client.get('/').text
+    assert f'<span class="chip" id="version" title="Simulator-Version">v{__version__}</span>' in page
+    assert '{{version}}' not in page
+
+
 def test_logo_and_icons_are_served(admin):
     client, _ = admin
     page = client.get('/').text
@@ -88,18 +118,36 @@ def test_logo_and_icons_are_served(admin):
     assert favicon.status_code == 200 and favicon.content[:4] == b'\x00\x00\x01\x00'
 
 
-def test_assets_are_cache_busted_with_the_version(admin):
-    from lg_tv_sim import __version__
-    client, _ = admin
+def test_assets_are_cache_busted_with_version_and_content(admin, monkeypatch, tmp_path):
+    import lg_tv_sim.admin.api as api
+    client, sim = admin
     page = client.get('/')
+    tag = api.asset_tag()
+    assert tag.startswith(f'{__version__}-') and len(tag) == len(__version__) + 9
     assert '{{' not in page.text and page.headers['cache-control'] == 'no-store'
     for name in ('app.js', 'style.css', 'logo.png', 'favicon-96x96.png', 'apple-touch-icon.png'):
-        assert f'/static/{name}?v={__version__}' in page.text
-    assert f'/favicon.ico?v={__version__}' in page.text
-    current = client.get(f'/static/app.js?v={__version__}')
-    assert 'immutable' in current.headers['cache-control']
+        assert f'/static/{name}?v={tag}' in page.text
+    assert f'/favicon.ico?v={tag}' in page.text
+    assert 'immutable' in client.get(f'/static/app.js?v={tag}').headers['cache-control']
+    # Same version, edited asset: old ?v= values must no longer be cached forever.
+    assert client.get(f'/static/app.js?v={__version__}').headers['cache-control'] == 'no-store'
     assert client.get('/static/app.js?v=0.0.0-old').headers['cache-control'] == 'no-store'
     assert client.get('/static/app.js').headers['cache-control'] == 'no-store'
+    edited = tmp_static(monkeypatch, api, tmp_path, 'style.css', b'/* edited */')
+    assert api.asset_tag() != tag and api.asset_tag().startswith(f'{__version__}-')
+    assert f'?v={api.asset_tag()}' in TestClient(create_app(sim)).get('/').text
+    assert edited.exists()
+
+
+def tmp_static(monkeypatch, api, tmp_path, name, extra):
+    """Copy the static folder, append bytes to one file and point the admin module at the copy."""
+    import shutil
+    target = tmp_path / 'static'
+    shutil.copytree(api.STATIC, target)
+    with (target / name).open('ab') as handle:
+        handle.write(extra)
+    monkeypatch.setattr(api, 'STATIC', target)
+    return target / name
 
 
 def test_admin_lists_lg_channels_read_only(sim_factory):

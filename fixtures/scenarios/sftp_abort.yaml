@@ -1,5 +1,5 @@
 id: sftp_abort
-description: "T06: SFTP download of the backup aborts after 4096 bytes"
+description: "T06: Der SFTP-Download der Sicherung bricht nach 4096 Bytes ab"
 seed: 1001
 rules:
   - id: sftp-abort-4k

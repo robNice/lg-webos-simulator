@@ -1,5 +1,5 @@
 id: slow_write_answer
-description: "changeChannelNumber is written immediately but answered only after 3 s (client timeout tests)"
+description: "changeChannelNumber wird sofort geschrieben, die Antwort kommt aber erst nach 3 s (Timeout-Tests im Editor)"
 seed: 1001
 rules:
   - id: number-slow

@@ -1,5 +1,5 @@
 id: fail_after_second_step
-description: "T33: the third changeChannelNumber of a sequence fails; steps 1-2 stay applied (no rollback)"
+description: "T33: Der 3. changeChannelNumber einer Folge schlägt fehl; Schritte 1–2 bleiben bestehen (kein Rollback)"
 seed: 1001
 rules:
   - id: number-3-drop

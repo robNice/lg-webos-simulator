@@ -1,5 +1,5 @@
 id: timeout_after_mutation
-description: "T32: first changeChannelNumber is written, then the connection drops before the answer"
+description: "T32: Der 1. changeChannelNumber wird geschrieben, dann bricht die Verbindung vor der Antwort ab"
 seed: 1001
 rules:
   - id: number-1-drop-after
