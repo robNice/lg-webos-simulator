@@ -39,6 +39,9 @@ Am TV nur lesend ermittelt, außer E8. Die Nummern verweisen auf `docs/evidence-
 | E7 | Live-Antwort meldet für IP-Mitglieder dieselben `favoriteIdx`/`favoriteGroup` wie die Datenbank | `getChannelList` liest IP-Einträge aus `ip` |
 | E8 | Umsortieren von 5 LG Channels in Liste D per Editor funktionierte; danach weiter 251–255 in neuer Reihenfolge | Verschieben im IP-Block vergibt 251… neu |
 | E9 | LG Channels lassen sich nicht umnummerieren (Nutzerbeobachtung) | `changeChannelNumber` mit IP-ID: `SIM_UNSUPPORTED_IP_CHANNEL` |
+| E12 | Ohne `attribute`-Filter kommen auch ausgeblendete Einträge, mit `"Invisible": true`; `{Invisible: true}` liefert genau die 27 ausgeblendeten (13.10.2026) | Filter `true`/`false`/keiner |
+| E13 | Ausgeblendete Einträge lassen sich in Favoritenlisten aufnehmen und entfernen; sie bleiben ausgeblendet und erscheinen am TV in der Liste (13.10.2026) | wie bei sichtbaren Einträgen |
+| E14 | `set`/`releaseChannelFavoriteGroup` antworten `returnValue:false`, obwohl sie wirken (10 von 10) | Profil `favorites.membership_return_value: false` |
 
 Offen (Simulator-Annahmen, siehe `docs/compatibility-gaps.md`): U1 Blockgrenze Tuner/IP, U2 Index beim Aufnehmen
 per API, U3 Verdichten beim Entfernen, U4 Fehlercode für IP-Umnummerierung, U5 ID-Umschreibung bei Kabel/Antenne.

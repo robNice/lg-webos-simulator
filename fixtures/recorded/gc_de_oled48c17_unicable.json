@@ -1,0 +1,28 @@
+{
+  "name": "gc_de_oled48c17_unicable",
+  "source": "LG-Senderlist_original_2022-02-10.tll",
+  "source_sha256": "a3224d2d56d7f7becf8841607da20135e02e086bf6e111745458fe51eba3223e",
+  "imported": "2026-10-13T11:01:02+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/issues/286",
+  "model": "OLED48C17LB",
+  "country": "DEU",
+  "clone_version": "200",
+  "format": "json",
+  "report": {
+    "converted": 1252,
+    "by_mode": {
+      "Satellite": 1252
+    },
+    "satellites": {
+      "ASTRA 19.2E": 1252
+    },
+    "skipped": {
+      "deleted": 1349
+    },
+    "invisible": 73
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export OLED48C17LB (DEU): Satellite 1252",
+  "content_hash": "20733089a83c4761e4fcf482c01c300dc1a91d40f6f2bb1f174f6e402d08f9c9"
+}

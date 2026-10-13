@@ -1,0 +1,30 @@
+{
+  "name": "gc_ch_oled55gx6_hotbird_astra_cable",
+  "source": "GlobalClone00201.TLL",
+  "source_sha256": "dbe9d7b18efb9bd8469819e363af4beec02c445a10d11fd37fd86e3107ca917d",
+  "imported": "2026-10-13T11:01:06+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/blob/master/source/Test.Loader.LG/GlobalClone/GlobalClone00201.TLL",
+  "model": "OLED55GX6LA",
+  "country": "CHE",
+  "clone_version": "200",
+  "format": "json",
+  "report": {
+    "converted": 3452,
+    "by_mode": {
+      "Cable": 396,
+      "Satellite": 3056
+    },
+    "satellites": {
+      "ASTRA 19.2E": 1264,
+      "EUTELSAT HOTBIRD 13.0E": 1792
+    },
+    "skipped": {
+      "deleted": 1
+    },
+    "invisible": 143
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export OLED55GX6LA (CHE): Cable 396, Satellite 3056",
+  "content_hash": "11dafdb00d7b850b2d35280deaede73960e6824508c3b208990488d26e787725"
+}

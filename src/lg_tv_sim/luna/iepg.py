@@ -106,16 +106,19 @@ def get_channel_list(engine: TvEngine, params: dict, **_) -> EngineResult:
     if groups != ['All']:
         raise UnsupportedOperation('only channelGroup ["All"] is simulated')
     p.get('acceptEmptyGroupName', bool, required=False)
-    hide_invisible = False
-    for item in p.get('attribute', list, required=False, default=[]):
-        if item != {'filterType': 'Invisible', 'value': False}:
+    # Invisible filter (E2, E12): false = only shown entries, true = only hidden ones, none = both.
+    attributes = p.get('attribute', list, required=False, default=[])
+    invisible = None
+    for item in attributes:
+        if (not isinstance(item, dict) or set(item) != {'filterType', 'value'} or item['filterType'] != 'Invisible'
+                or not isinstance(item['value'], bool) or len(attributes) > 1):
             raise UnsupportedOperation(f'unsupported attribute filter {item!r}')
-        hide_invisible = True
+        invisible = item['value']
     entries, stale = engine.visible_entries()
     selected = [e for e in entries
                 if e.mode in modes
                 and (channel_type is None or e.channel_type == channel_type)
-                and not (hide_invisible and e.invisible)]
+                and (invisible is None or e.invisible == invisible)]
     selected.sort(key=lambda e: (e.number, e.channel_id))
     channels = [channel_json(e) for e in selected]
     return EngineResult(value={'returnValue': True, 'channelList': channels, 'channelListCount': len(channels)},
@@ -151,7 +154,7 @@ def _favorite(member: bool):
         if not all(g in GROUPS and len(g) == 1 for g in groups):
             raise LunaError('ERROR_INVALID_PARAMETER', 'favoriteGroup must contain letters A-H')
         result = engine.set_favorites(channel_ids, groups, member, **_write_options(fault.action if fault else None))
-        result.value = {'returnValue': True}
+        result.value = {'returnValue': engine.profile.favorites.membership_return_value}   # E14: false
         return result
     return handler
 

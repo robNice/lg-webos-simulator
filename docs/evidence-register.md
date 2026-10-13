@@ -142,6 +142,43 @@ vom TV kopiert), `REAL_TV_READ` (am TV nur lesend ermittelt), `REAL_TV_CONFIRMED
   evidence_level: CURRENT_CLIENT_CONFIRMED (Aufruf und gelesene Felder, tv_identity.py v0.6.4); Antwortlayout/Formatierung SIMULATOR_ASSUMPTION
   consequence: "Simulator meldet Modell aus [device] und immer eine SIM-Seriennummer"
 
+- id: E11-globalclone-content
+  claim: "GlobalClone-USB-Exporte (legacybroadcast) tragen dieselben Senderinhalte wie die iepg-Datenbank: Frequenz (Satellit MHz, Kabel/Antenne kHz), Radio-Nummern mit 0x4000 wie maj_no, Satellitennamen wie sat_name (z. B. 'ASTRA 19.2E'), serviceType wie svc_type"
+  evidence_level: REAL_TV_READ (Abgleich gleicher DVB-Tripel zwischen der echten Sicherung 11.10.2026 und öffentlichen Exporten anderer TVs: Frequenz 341/341 gleich, Radio-Flag bei 100 % der Radiosender)
+  source: "ChanSort-Diskussion #207, Issues #286, #401, #418, ChanSort-Testdateien (GPLv3), lg-channel-import (TR)"
+  consequence: "lg-tv-sim import-globalclone übernimmt diese Felder 1:1"
+
+- id: U6-globalclone-structure
+  claim: "Was der Export nicht enthält: dvc_chan_id, min_no (immer 0), LCN-Flag (immer false); Bedeutung von Invisible = invisible_flag; alte XML-Codes sourceIndex 2/3"
+  evidence_level: SIMULATOR_ASSUMPTION (Builder-Regeln wie bei synthetischen Fixtures; Invisible als ausgeblendet übernommen, abschaltbar; sourceIndex 7 = Satellit und 1 = Antenne belegt, andere Codes nur per --mode-map)
+  known_limitations:
+    - "ID-Layout für andere Satelliten als Astra 19.2E ungemessen"
+    - "physicalNumber stammt aus dem Suchlauf des exportierenden TV"
+    - "Satellit im alten XML aus der Satelliten-DB der Datei; bei Widerspruch (UK-Export: 19.2E, aber ONID 2) per --satellite"
+
+- id: E12-invisible-filter
+  claim: "getChannelList Satellite ohne attribute-Filter liefert auch ausgeblendete Einträge, je Zeile mit \"Invisible\": true (Bibel TV 790); mit {filterType: Invisible, value: true} genau die 27 ausgeblendeten"
+  evidence_level: REAL_TV_READ (OLED55C27LA, 13.10.2026, luna-send lesend)
+  source: "Ohne Filter 710 Zeilen gezählt (grep auf channelId); die Sicherung vom 11.10. hat 709 Satellitenzeilen, Gegencheck offen"
+  consequence: "Simulator: kein Filter = alle, false = sichtbare, true = ausgeblendete; mehrere oder andere Filter schlagen fehl"
+
+- id: E13-hidden-entries-in-favorites
+  claim: "setChannelFavoriteGroup nimmt einen ausgeblendeten Eintrag wie einen sichtbaren auf (Bibel TV 790 in Liste H: favoriteGroup [H], favoriteIdxH 1 nach tagesschau24 HD mit 0); er bleibt ausgeblendet (Invisible true, invisible_flag 1), erscheint am TV in Liste H; releaseChannelFavoriteGroup nimmt ihn wieder heraus"
+  evidence_level: REAL_TV_CONFIRMED (OLED55C27LA, 13.10.2026, Messskript mit Gegenprobe, Live-Liste und Datenbank)
+  consequence: "Simulator unverändert (er verhielt sich schon so); Annahme U7 dafür aufgelöst"
+
+- id: E14-favorite-membership-returnvalue
+  claim: "set/releaseChannelFavoriteGroup antworten {returnValue:false}, obwohl sie wirken (10 von 10 Aufrufen, sichtbare und ausgeblendete Einträge); die Datenbank-Datei zieht nach weniger als 2 s nach"
+  evidence_level: REAL_TV_CONFIRMED (13.10.2026)
+  implementation_profile: "favorites.membership_return_value: false"
+  known_limitations:
+    - "favoriteGroup als Zeichenkette statt Liste: Antwort ebenfalls false, Wirkung nicht sauber gemessen (sofort gelesen)"
+    - "moveChannelFavoritePriority antwortet im Simulator weiter true (ungemessen)"
+
+- id: U7-invisible-other-writes
+  claim: "moveChannelFavoritePriority und changeChannelNumber auf ausgeblendete Einträge"
+  evidence_level: SIMULATOR_ASSUMPTION (wirken wie bei sichtbaren Einträgen, der Eintrag bleibt ausgeblendet)
+
 - id: luna-response-shapes
   claim: "Antwortlayout der Luna-Methoden"
   evidence_level: SIMULATOR_ASSUMPTION (keine freigegebenen Traces)

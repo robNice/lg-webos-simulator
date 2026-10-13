@@ -142,7 +142,9 @@ class AdminPage {
 
   renderStatus(s) {
     this.el('conn').textContent = s.ssh ? `SSH/SFTP: ${s.username}@${s.ssh.host}:${s.ssh.port}` : 'SSH nicht gestartet';
-    this.el('fixture').value = s.fixture;
+    // Follow the simulator only when its state changes, so a selection made for the next reset survives the refresh.
+    if (this.activeFixture !== s.fixture) this.el('fixture').value = s.fixture;
+    this.activeFixture = s.fixture;
     if (this.activeScenario !== s.scenario) this.el('scenario').value = s.scenario;
     this.activeScenario = s.scenario;
     const cards = [

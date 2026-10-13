@@ -43,6 +43,18 @@ def build_parser() -> argparse.ArgumentParser:
     imp.add_argument('--public', action='store_true',
                      help='sanitise (blank ip contacts/stream URLs, refuse e-mail/URL/key data) into fixtures/recorded')
 
+    gc = sub.add_parser('import-globalclone',
+                        help='convert an LG GlobalClone USB export (GlobalClone00001.TLL) into a fixture')
+    gc.add_argument('file')
+    gc.add_argument('--name', required=True)
+    gc.add_argument('--public', action='store_true', help='into fixtures/recorded (needs --origin, no personal data)')
+    gc.add_argument('--origin', default='', help='where the export was published (URL), stored in the metadata')
+    gc.add_argument('--mode-map', action='append', default=[], metavar='CODE=MODE',
+                    help='reception mode for an unevidenced source code, e.g. 3=Cable (repeatable)')
+    gc.add_argument('--satellite', help='satellite name for every satellite entry, e.g. "ASTRA 28.2E"')
+    gc.add_argument('--ignore-invisible', action='store_true',
+                    help="do not take over the export's Invisible flag (e.g. when every entry is hidden)")
+
     reset = sub.add_parser('reset', help='reset a running simulator via its admin API')
     reset.add_argument('--fixture')
     reset.add_argument('--scenario')
@@ -165,6 +177,23 @@ def cmd_import(config: SimulatorConfig, args) -> int:
     return 0
 
 
+def cmd_import_globalclone(config: SimulatorConfig, args) -> int:
+    from lg_tv_sim.storage.fixtures import FixtureCatalog
+    mode_map = {}
+    for item in args.mode_map:
+        code, sep, mode = item.partition('=')
+        if not sep or not code or not mode:
+            raise ValueError(f'--mode-map {item!r}: expected CODE=MODE, e.g. 3=Cable')
+        mode_map[code] = mode
+    catalog = FixtureCatalog(config.path(config.storage.fixtures_dir), config.path(config.storage.private_fixtures_dir),
+                             config.path(config.storage.recorded_fixtures_dir))
+    meta = catalog.import_globalclone(Path(args.file), args.name, public=args.public, origin=args.origin,
+                                      mode_map=mode_map, satellite=args.satellite,
+                                      ignore_invisible=args.ignore_invisible)
+    print(json.dumps(meta, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _admin(config: SimulatorConfig, path: str, body: dict | None = None) -> bytes:
     import os
     url = f'http://{config.server.admin_host}:{config.server.admin_port}{path}'
@@ -240,7 +269,7 @@ def cmd_build_synthetic(config: SimulatorConfig, args) -> int:
 
 COMMANDS = {
     'serve': cmd_serve, 'inspect-fixture': cmd_inspect, 'validate-fixture': cmd_validate,
-    'import-fixture': cmd_import, 'reset': cmd_reset, 'scenarios': cmd_scenarios,
+    'import-fixture': cmd_import, 'import-globalclone': cmd_import_globalclone, 'reset': cmd_reset, 'scenarios': cmd_scenarios,
     'export-state': cmd_export, 'export-trace': cmd_export, 'known-hosts': cmd_known_hosts,
     'build-synthetic': cmd_build_synthetic,
 }

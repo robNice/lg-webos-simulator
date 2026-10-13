@@ -14,6 +14,7 @@ Entscheidung stets zugunsten des **aktuellen Codes** (Wahrheitshierarchie, Spec 
 | G7 | Python-Version | 3.12+ | MX Linux hat hier Python **3.11.2**. Der Simulator unterstützt ≥ 3.11. |
 | G8 | Admin-Port | `127.0.0.1:8766` | **8767**, weil 8766 von der Editor-Entwicklung (Browser-Tests) genutzt wird. 8765 und 8766 sind gesperrt. |
 | G9 | `getChannelList`-Modus | `channelMode: "Satellite"` | Seit Editor v0.6.4 `channelMode: ["Tuner","IP"]` (wie LGs App, E1). Der Simulator nimmt String oder Liste; `Tuner` = Satellit + Kabel + Antenne, `IP` = LG Channels; unbekannte Werte schlagen fehl. |
+| G10 | Fremde Senderlisten | – | `import-globalclone` macht aus LG-USB-Exporten (GlobalClone, auch von anderen TVs, Ländern und Satelliten) Fixtures. Inhalte sind echt (E11), die Struktur der iepg-Zeilen ist abgeleitet (U6). Für Editor-Tests reicht das; Aussagen über das ID-Verhalten anderer Satelliten liefert es nicht. |
 
 ## Offene Protokolldetails (UNKNOWN)
 

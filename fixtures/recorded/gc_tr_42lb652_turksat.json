@@ -1,0 +1,26 @@
+{
+  "name": "gc_tr_42lb652_turksat",
+  "source": "tv-export-2026-08-31.tll",
+  "source_sha256": "a5d7730f22965c11dcd3e35b3737acec5fbdcfdbae071d02462c7bd34dfd8f09",
+  "imported": "2026-10-13T11:01:12+00:00",
+  "tags": {},
+  "origin": "https://github.com/mertparlak-zima/lg-channel-import/blob/main/reference/tv-export-2026-08-31.tll",
+  "model": "42LB652V-ZA",
+  "country": "TUR",
+  "clone_version": "100",
+  "format": "xml",
+  "report": {
+    "converted": 482,
+    "by_mode": {
+      "Satellite": 482
+    },
+    "satellites": {
+      "TURKSAT 42.0E": 482
+    },
+    "skipped": {},
+    "invisible": 287
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export 42LB652V-ZA (TUR): Satellite 482",
+  "content_hash": "db341bfe8d05e58b5f75f17c29bcf74c11b05f39bf577d13a751ab4ec12e9562"
+}

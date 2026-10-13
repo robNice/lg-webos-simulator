@@ -1,0 +1,30 @@
+{
+  "name": "gc_at_32lh604_astra_cable",
+  "source": "GlobalClone00002.TLL",
+  "source_sha256": "0900b9ac25cb336ff02b57dbce768474ad2410520767a390cbba2623c6cd1793",
+  "imported": "2026-10-13T11:01:28+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/blob/master/source/Test.Loader.LG/GlobalClone/GlobalClone00002.TLL",
+  "model": "32LH604V-ZB",
+  "country": "AUT",
+  "clone_version": "100",
+  "format": "xml",
+  "report": {
+    "converted": 1826,
+    "by_mode": {
+      "Cable": 518,
+      "Satellite": 1308
+    },
+    "satellites": {
+      "ASTRA 19.2E": 1308
+    },
+    "skipped": {},
+    "invisible_ignored": 1464,
+    "mode_map": {
+      "3": "Cable"
+    }
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export 32LH604V-ZB (AUT): Cable 518, Satellite 1308",
+  "content_hash": "2d22ddf2f05e7de45b98392cac537ea65f51f2dc3395e4e17191c2b6d92e2312"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "gc_de_65nano917_sat_cable",
+  "source": "GlobalClone00001.TLL",
+  "source_sha256": "8f10af0fec9d8f655e4af881ca0d1f6ec90894342be0c6296c7eb5a04fb2398c",
+  "imported": "2026-10-13T11:00:58+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/discussions/207",
+  "model": "LG65NANO917NA.AEU",
+  "country": "DEU",
+  "clone_version": "200",
+  "format": "json",
+  "report": {
+    "converted": 925,
+    "by_mode": {
+      "Satellite": 726,
+      "Cable": 199
+    },
+    "satellites": {
+      "ASTRA 19.2E": 726
+    },
+    "skipped": {
+      "deleted": 65
+    },
+    "invisible_ignored": 925
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export LG65NANO917NA.AEU (DEU): Satellite 726, Cable 199",
+  "content_hash": "b5b790998c7c3a4d474ffa793c3b7c5a9ad3dc3669f203e66299473c3c5db9b4"
+}

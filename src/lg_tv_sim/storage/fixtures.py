@@ -183,7 +183,8 @@ def _channel_row(c: dict, columns: list[tuple[str, str]], positions: dict[str, d
         'chan_mode_name': mode, 'chan_mode_id': mode_id,
         'signal_chan_id': f'{c.get("tsid", 0)}_{c.get("sid", 0)}_{c.get("onid", 1)}', 'online_chan_id': f'{cid}_{code}',
         'user_fav_chan_gr': user_fav_json(groups), 'descrambled_flag': 1, 'satelliteLcn_flag': int(c.get('lcn', 0)),
-        'scrambled_flag': int(c.get('scrambled', 0)), 'valid_svc_flag': 1, 'svc_type': 2 if radio else 25,
+        'scrambled_flag': int(c.get('scrambled', 0)), 'valid_svc_flag': 1,
+        'svc_type': int(c.get('svc_type', 2 if radio else 25)),
         'svc_display_flag': 1, 'dvb_chan_nw_id': int(c.get('onid', 1)), 'dvb_chan_transf_strm_id': int(c.get('tsid', 0)),
         'dvb_chan_svc_id': int(c.get('sid', 0)), 'hdtv_flag': int(not radio), 'invisible_flag': int(c.get('invisible', 0)),
         'dtv_flag': 1, 'radio_flag': int(radio), 'tv_flag': int(not radio), 'primary_channel_flag': 1,
@@ -286,6 +287,56 @@ class FixtureCatalog:
         finally:
             conn.close()
         target.with_suffix('.json').write_text(json.dumps(meta, indent=2) + '\n', encoding='utf-8')
+        return meta
+
+
+    def import_globalclone(self, source: Path, name: str, public: bool = False, origin: str = '',
+                           mode_map: dict[str, str] | None = None, satellite: str | None = None,
+                           ignore_invisible: bool = False) -> dict:
+        """Convert an LG GlobalClone USB export into an SQLite fixture (see ``storage.globalclone``).
+
+        Private (default) goes to the git-ignored private directory.  Public goes to the recorded directory,
+        needs ``origin`` (where the export was published) and is refused if personal data remains.
+        """
+        from lg_tv_sim.storage.globalclone import parse_globalclone
+        if not NAME_PATTERN.fullmatch(name or ''):
+            raise FixtureError(f'invalid fixture name {name!r}')
+        if name in self.names():
+            raise FixtureError(f'fixture {name!r} already exists; choose another name')
+        if public and not origin:
+            raise FixtureError('a public GlobalClone fixture needs its origin (URL of the published export)')
+        conversion = parse_globalclone(source, mode_map=mode_map, satellite=satellite,
+                                       ignore_invisible=ignore_invisible)
+        directory = self.recorded_dir if public else self.private_dir
+        if directory is None:
+            raise FixtureError('no directory configured for recorded fixtures')
+        directory.mkdir(parents=True, exist_ok=True)
+        target = directory / f'{name}.sqlite'
+        try:
+            build_from_spec({'channels': conversion.channels}, target)
+            findings = personal_data_findings(target) if public else []
+            if findings:
+                raise FixtureError('possible personal data remains, not importing publicly: ' + '; '.join(findings[:5]))
+        except BaseException:
+            target.unlink(missing_ok=True)
+            raise
+        meta = {'name': name, 'source': Path(source).name if public else str(Path(source).resolve()),
+                'source_sha256': database.file_sha256(Path(source)),
+                'imported': datetime.datetime.now(datetime.UTC).isoformat(timespec='seconds'), 'tags': {},
+                'origin': origin, **conversion.meta, 'report': conversion.report,
+                'evidence': 'content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, '
+                            'satellites); dvc_chan_id layout, min_no and LCN flag follow the builder '
+                            '(SIMULATOR_ASSUMPTION, G10)',
+                'description': f'GlobalClone export {conversion.meta.get("model")} '
+                               f'({conversion.meta.get("country")}): '
+                               + ', '.join(f'{m} {n}' for m, n in conversion.report['by_mode'].items())
+                               + ('' if public else ' (private, never commit)')}
+        conn = database.connect(target, readonly=True)
+        try:
+            meta['content_hash'] = database.content_hash(conn)
+        finally:
+            conn.close()
+        target.with_suffix('.json').write_text(json.dumps(meta, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
         return meta
 
 

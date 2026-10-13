@@ -1,0 +1,28 @@
+{
+  "name": "gc_at_50uk6470_astra",
+  "source": "GlobalClone00001.TLL",
+  "source_sha256": "e54dcb7989b851351d91fac82fea5901322c19f639ba044fae0006f3d0d6eaaa",
+  "imported": "2026-10-13T11:01:11+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/blob/master/source/Test.Loader.LG/GlobalClone/GlobalClone00001.TLL",
+  "model": "50UK6470PLC",
+  "country": "AUT",
+  "clone_version": "100",
+  "format": "xml",
+  "report": {
+    "converted": 1283,
+    "by_mode": {
+      "Satellite": 1283
+    },
+    "satellites": {
+      "ASTRA 19.2E": 1283
+    },
+    "skipped": {
+      "deleted": 15
+    },
+    "invisible": 299
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export 50UK6470PLC (AUT): Satellite 1283",
+  "content_hash": "8ce59fe89ebae19cecd33fc71ec89d7c3addd9a63e2009d0115f9e808dba09ff"
+}

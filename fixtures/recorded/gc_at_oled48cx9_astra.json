@@ -1,0 +1,28 @@
+{
+  "name": "gc_at_oled48cx9_astra",
+  "source": "GlobalClone00001.TLL",
+  "source_sha256": "bdd7961cd39f582b09150fb186d42a29ed73638aea5a590ba3173c2d0d677b77",
+  "imported": "2026-10-13T11:01:00+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/discussions/207",
+  "model": "OLED48CX9LB",
+  "country": "AUT",
+  "clone_version": "200",
+  "format": "json",
+  "report": {
+    "converted": 1231,
+    "by_mode": {
+      "Satellite": 1231
+    },
+    "satellites": {
+      "ASTRA 19.2E": 1231
+    },
+    "skipped": {
+      "deleted": 54
+    },
+    "invisible": 220
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export OLED48CX9LB (AUT): Satellite 1231",
+  "content_hash": "b7a5ee3a11e033a105d368345b2ee4cd1ce3587db4adcdf2ef541f22c79692c8"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "gc_at_oled55cx8_cable",
+  "source": "GlobalClone00001.TLL",
+  "source_sha256": "c2ab92a08e89d4e870e5c07f33988c25d89ab7f86e1ed8e71a17783fef4042a7",
+  "imported": "2026-10-13T11:00:59+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/discussions/207",
+  "model": "OLED55CX8LB",
+  "country": "AUT",
+  "clone_version": "200",
+  "format": "json",
+  "report": {
+    "converted": 516,
+    "by_mode": {
+      "Cable": 516
+    },
+    "satellites": {},
+    "skipped": {},
+    "invisible": 1
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export OLED55CX8LB (AUT): Cable 516",
+  "content_hash": "786af5933e15e143ac79f3f8db53a482e9e6bede61a905fbafbf73cc8e339f57"
+}

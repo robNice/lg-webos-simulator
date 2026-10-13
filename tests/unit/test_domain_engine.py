@@ -119,7 +119,7 @@ def test_t21_migrate_a_to_copy_then_release_original(sim):
     renumber(sim, alpha['channelId'], 27)
     copy = find(live(sim), 'ARD-alpha HD', 27)
     assert call(sim, 'setChannelFavoriteGroup', {'channelId': [copy['channelId']], 'favoriteGroup': ['A']}) == \
-        {'returnValue': True}
+        {'returnValue': False}   # E14
     channels = live(sim)
     assert find(channels, 'ARD-alpha HD', 27)['favoriteGroup'] == ['A']
     assert find(channels, 'ARD-alpha HD', 125)['favoriteGroup'] == ['A']
@@ -149,7 +149,7 @@ def test_t24_duplicate_a_membership_merge(sim):
     original = find(live(sim), 'HGTV HD', 1827)
     call(sim, 'setChannelFavoriteGroup', {'channelId': [copy['channelId']], 'favoriteGroup': ['A']})
     assert call(sim, 'setChannelFavoriteGroup', {'channelId': [copy['channelId']], 'favoriteGroup': ['A']}) == \
-        {'returnValue': True}
+        {'returnValue': False}   # E14
     assert last_event(sim)['mutations'] == []          # already a member: no second entry
     call(sim, 'releaseChannelFavoriteGroup', {'channelId': [original['channelId']], 'favoriteGroup': ['A']})
     channels = live(sim)

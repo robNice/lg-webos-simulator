@@ -1,0 +1,28 @@
+{
+  "name": "gc_ro_42lb731_cable",
+  "source": "GlobalClone.xml",
+  "source_sha256": "b6614b03a94f1d2774a13011f0865779347a451a936a03ef99e4932f2d1bb105",
+  "imported": "2026-10-13T11:01:14+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/blob/master/source/Test.Loader.LG/GlobalClone.xml",
+  "model": "42LB731V-ZE",
+  "country": "ROU",
+  "clone_version": "100",
+  "format": "xml",
+  "report": {
+    "converted": 137,
+    "by_mode": {
+      "Cable": 137
+    },
+    "satellites": {},
+    "skipped": {
+      "analog": 13
+    },
+    "mode_map": {
+      "3": "Cable"
+    }
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export 42LB731V-ZE (ROU): Cable 137",
+  "content_hash": "5896404de6ef63225ff420e07681b1cb9bddc395c7662ec41cb4111d54524994"
+}

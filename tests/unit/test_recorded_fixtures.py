@@ -80,6 +80,9 @@ def test_committed_recorded_fixtures_are_clean(path):
     meta = json.loads(path.with_suffix('.json').read_text(encoding='utf-8'))
     if 'derived_from' in meta:       # generated from another recorded fixture (build-synthetic)
         meta = json.loads((RECORDED / f'{meta["derived_from"]}.json').read_text(encoding='utf-8'))
+    if 'format' in meta:             # converted GlobalClone export (import-globalclone --public)
+        assert meta['origin'].startswith('https://') and '/' not in meta['source'] and meta['report']['converted']
+        return
     assert meta['blanked_columns'] == ['ip.call_num', 'ip.ip_chan_service_url'] and '/' not in meta['source']
 
 

@@ -52,8 +52,12 @@ class FavoriteLayout(Strict):
     members can move before tuner members is UNKNOWN (U1): with ``ip_block_after_tuner`` the IP block stays
     behind the tuner members and a crossing move changes nothing but still answers returnValue true;
     ``false`` keeps one joint order 0..n-1 (SIMULATOR_ASSUMPTION either way).
+
+    ``membership_return_value``: what set/releaseChannelFavoriteGroup answer when they take effect.  The real TV
+    answered false in 10 of 10 calls, hidden and visible entries alike (E14, REAL_TV_CONFIRMED 13.10.2026).
     """
     ip_block_after_tuner: bool = True
+    membership_return_value: bool = False
     ip_first_index: int = IP_FIRST_INDEX
     ip_not_member_index: int = IP_NOT_MEMBER_INDEX
 

@@ -1,0 +1,29 @@
+{
+  "name": "gc_gb_49uh770_astra282",
+  "source": "GlobalClone00001.TLL",
+  "source_sha256": "e0b4781a3256a48f54ced77997557c4d6585e7a0d8662a200db710178ee4de49",
+  "imported": "2026-10-13T11:01:26+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/issues/401",
+  "model": "49UH770V-ZA",
+  "country": "GBR",
+  "clone_version": "100",
+  "format": "xml",
+  "report": {
+    "converted": 371,
+    "by_mode": {
+      "Satellite": 371
+    },
+    "satellites": {
+      "ASTRA 28.2E": 371
+    },
+    "skipped": {
+      "deleted": 52
+    },
+    "invisible": 89,
+    "satellite_override": "ASTRA 28.2E"
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export 49UH770V-ZA (GBR): Satellite 371",
+  "content_hash": "7fb43427ebcb78617c3284feb2b6998d311555c4b62f5443bb014f4c1de8a00e"
+}

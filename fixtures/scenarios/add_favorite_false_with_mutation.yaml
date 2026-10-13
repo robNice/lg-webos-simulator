@@ -1,5 +1,5 @@
 id: add_favorite_false_with_mutation
-description: "Der 1. setChannelFavoriteGroup antwortet false, obwohl der Sender in die Gruppe aufgenommen wurde"
+description: "Der 1. setChannelFavoriteGroup antwortet false, obwohl der Sender aufgenommen wurde (seit E14 auch das Normalverhalten)"
 seed: 1001
 evidence: HISTORICAL_REPORTED
 rules:

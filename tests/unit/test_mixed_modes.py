@@ -111,7 +111,7 @@ def test_stale_view_includes_ip_entries(sim_factory):
     channel = by_name(sim, 'Stream Doku')
     assert 'D' not in channel['favoriteGroup']
     assert call(sim, 'setChannelFavoriteGroup', {'channelId': [channel['channelId']], 'favoriteGroup': ['D']}) \
-        == {'returnValue': True}
+        == {'returnValue': False}   # E14
     assert 'D' not in by_name(sim, 'Stream Doku')['favoriteGroup']   # one stale read, IP entry still listed
     assert 'D' in by_name(sim, 'Stream Doku')['favoriteGroup']
 
@@ -127,18 +127,19 @@ def test_get_channel_knows_ip(sim):
 def test_add_ip_to_list_takes_next_index_from_251(sim):
     tuner_before = tuner_rows(sim)
     kino = by_name(sim, 'Stream Kino')['channelId']
-    assert call(sim, 'setChannelFavoriteGroup', {'channelId': [kino], 'favoriteGroup': ['D']})['returnValue']
+    assert call(sim, 'setChannelFavoriteGroup', {'channelId': [kino], 'favoriteGroup': ['D']}) == {'returnValue': False}  # E14
     assert ip_index(sim, 'D', 'Stream Kino') == ('1', 254, '["A","D"]')
     assert favorite_idx(sim, 'D', 'Stream Kino') == [('1', 254)]
     news = by_name(sim, 'Stream News')['channelId']
-    assert call(sim, 'setChannelFavoriteGroup', {'channelId': [news], 'favoriteGroup': ['B']})['returnValue']
+    assert call(sim, 'setChannelFavoriteGroup', {'channelId': [news], 'favoriteGroup': ['B']}) == {'returnValue': False}  # E14
     assert ip_index(sim, 'B', 'Stream News')[:2] == ('1', 251)                      # empty list: 251
     assert tuner_rows(sim) == tuner_before                                           # tuner tables untouched
 
 
 def test_release_ip_compacts_the_ip_block(sim):
     film = by_name(sim, 'LG 1: Film')['channelId']
-    assert call(sim, 'releaseChannelFavoriteGroup', {'channelId': [film], 'favoriteGroup': ['D']})['returnValue']
+    response = call(sim, 'releaseChannelFavoriteGroup', {'channelId': [film], 'favoriteGroup': ['D']})
+    assert response == {'returnValue': False}  # E14
     assert ip_index(sim, 'D', 'LG 1: Film') == ('0', 255, '[]')                     # ip non-member: 255
     assert favorite_idx(sim, 'D', 'LG 1: Film') == [('0', 250)]                     # favorite_idx non-member: 250
     assert [ip_index(sim, 'D', n)[1] for n in ('LG 1', 'Stream News')] == [251, 252]
@@ -158,7 +159,8 @@ def test_reorder_inside_ip_block_reassigns_251(sim):
 def test_adding_tuner_to_mixed_list_keeps_ip_block(sim):
     a_before = order(sim, 'A')
     cable = [c for c in live(sim) if c['channelMode'] == 'Cable' and 'A' not in c['favoriteGroup']][0]
-    assert call(sim, 'setChannelFavoriteGroup', {'channelId': [cable['channelId']], 'favoriteGroup': ['A']})['returnValue']
+    response = call(sim, 'setChannelFavoriteGroup', {'channelId': [cable['channelId']], 'favoriteGroup': ['A']})
+    assert response == {'returnValue': False}  # E14
     after = order(sim, 'A')
     tuner_count = sum(1 for c in live(sim) if 'A' in c['favoriteGroup'] and c['channelMode'] != 'IP')
     assert after[tuner_count - 1] == cable['channelName']                    # appended at the end of the tuner block

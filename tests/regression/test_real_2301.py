@@ -58,7 +58,7 @@ def test_simulator_reproduces_the_2301_state_from_1417(sim_factory, added):
     ids = {name: cid for cid, name in rows(sim.run.db_path, 'SELECT dvc_chan_id, chan_std_name FROM ip')}
     for name in added:
         assert call(sim, 'setChannelFavoriteGroup', {'channelId': [ids[name]], 'favoriteGroup': ['D']}) == \
-            {'returnValue': True}
+            {'returnValue': False}   # E14
     for position, name in enumerate(D_ORDER):
         current = [r[1] for r in d_state(sim.run.db_path)[0]]
         if current[position] != name:

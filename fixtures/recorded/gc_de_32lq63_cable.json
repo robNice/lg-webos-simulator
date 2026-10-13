@@ -1,0 +1,24 @@
+{
+  "name": "gc_de_32lq63_cable",
+  "source": "GlobalClone00001.TLL",
+  "source_sha256": "98006ef520c9016c54eb5d69d45b54489e5caf4b4dd8c96d78ab6c4108d5e9bc",
+  "imported": "2026-10-13T11:00:57+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/issues/418",
+  "model": "32LQ63006LA",
+  "country": "DEU",
+  "clone_version": "200",
+  "format": "json",
+  "report": {
+    "converted": 370,
+    "by_mode": {
+      "Cable": 370
+    },
+    "satellites": {},
+    "skipped": {},
+    "invisible": 93
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export 32LQ63006LA (DEU): Cable 370",
+  "content_hash": "698c3ad23a0a1926dc53363f154ce266fcde8e73d5db7976b9d6ed574b788098"
+}

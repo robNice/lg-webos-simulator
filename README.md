@@ -87,6 +87,35 @@ Simulator das Umnummerieren von Einträgen ab, deren ID nicht `maj = min = Numme
 [docs/compatibility-gaps.md](docs/compatibility-gaps.md)). Fehlerszenarien liegen als YAML in `fixtures/scenarios/` und sind in
 [docs/observed-lg-behavior.md](docs/observed-lg-behavior.md) beschrieben. Unbekannte Schlüssel führen zu einem Fehler.
 
+### Senderlisten aus LG-USB-Exporten (GlobalClone)
+
+Andere Empfangsarten, Länder und Satelliten lassen sich aus einem USB-Export eines LG-TVs (`GlobalClone00001.TLL`,
+Einstellungen → Programme → Programme kopieren) als Fixture übernehmen:
+
+```bash
+lg-tv-sim import-globalclone GlobalClone00001.TLL --name ch_hotbird_astra            # privat, nie committen
+lg-tv-sim import-globalclone tv.tll --name tr_turksat --mode-map 3=Cable              # alter XML-Code
+lg-tv-sim import-globalclone tv.tll --name uk --satellite "ASTRA 28.2E"               # Satellit korrigieren
+lg-tv-sim import-globalclone tv.tll --name x --public --origin https://…              # nach fixtures/recorded
+```
+
+Übernommen werden Name, Nummer, Empfangsart, DVB-Tripel, Frequenz, Satellit, Diensttyp und ausgeblendete Sender
+(`--ignore-invisible` schaltet das ab). Gelöschte, analoge und IP-Einträge entfallen. Der Export ist nicht die
+Datenbank, die der Editor liest: `dvc_chan_id`, `min_no` und das LCN-Flag leitet der Simulator ab (E11, U6, G10).
+Unbekannte Codes und beschädigte Exporte führen zu einem Fehler. Öffentliche Fixtures brauchen `--origin`.
+
+Mitgeliefert (`fixtures/recorded/gc_*`, Quelle jeweils in der `.json`):
+
+| Fixture | Inhalt |
+|---|---|
+| `gc_ch_oled55gx6_hotbird_astra_cable` | Hotbird 13.0E + Astra 19.2E (DiSEqC) + Kabel, 3452 Sender |
+| `gc_at_oled55e6v_astra_dvbt` | Astra 19.2E + DVB-T (Österreich) |
+| `gc_at_32lh604_astra_cable`, `gc_de_65nano917_sat_cable` | Astra + Kabel (AT, DE/Vodafone) |
+| `gc_at_oled48cx9_astra`, `gc_at_50uk6470_astra`, `gc_de_oled48c17_unicable` | Astra 19.2E (AT; DE über Unicable) |
+| `gc_gb_49uh770_astra282` | Astra 28.2E (Großbritannien) |
+| `gc_tr_42lb652_turksat` | Türksat 42.0E |
+| `gc_de_32lq63_cable`, `gc_at_oled55cx8_cable`, `gc_ro_42lb731_cable` | Kabel DE (webOS 22), AT (Liwest), RO |
+
 ## Tests
 
 ```bash

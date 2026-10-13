@@ -1,0 +1,27 @@
+{
+  "name": "gc_at_oled55e6v_astra_dvbt",
+  "source": "GlobalClone00003.TLL",
+  "source_sha256": "d3c61710c03369521b4e234f40a6ad271a57d5b14f4df171d96c5ee1a38fcd30",
+  "imported": "2026-10-13T11:01:08+00:00",
+  "tags": {},
+  "origin": "https://github.com/PredatH0r/ChanSort/blob/master/source/Test.Loader.LG/GlobalClone/GlobalClone00003.TLL",
+  "model": "OLED55E6V-Z",
+  "country": "AUT",
+  "clone_version": "100",
+  "format": "xml",
+  "report": {
+    "converted": 1381,
+    "by_mode": {
+      "Terrestrial": 73,
+      "Satellite": 1308
+    },
+    "satellites": {
+      "ASTRA 19.2E": 1308
+    },
+    "skipped": {},
+    "invisible": 106
+  },
+  "evidence": "content from a real GlobalClone export (names, numbers, DVB triplets, frequencies, satellites); dvc_chan_id layout, min_no and LCN flag follow the builder (SIMULATOR_ASSUMPTION, G10)",
+  "description": "GlobalClone export OLED55E6V-Z (AUT): Terrestrial 73, Satellite 1308",
+  "content_hash": "21d77f77e97e4c71ab6a95022dfb10c31568213454b5aeb35a6fc23d86c2602f"
+}
